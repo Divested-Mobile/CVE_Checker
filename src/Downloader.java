@@ -27,15 +27,17 @@ public class Downloader {
             while(cve.hasNextLine()) {
                 String line = cve.nextLine();
                 String[] lineS = line.split("\"");
-                if(line.contains("cve_name")) {
+                if(line.contains("cve_name") || !cve.hasNextLine()) {
                     if(name.length() > 0) {
                         cves.add(new CVE(name, curNotes, links));
                         System.out.println("\t\tAdded " + links.size() + " links");
                         links = new ArrayList<Link>();
                         name = curNotes = "";
                     }
-                    name = lineS[3];
-                    System.out.println("\t" + name);
+                    if(cve.hasNextLine()) {
+                        name = lineS[3];
+                        System.out.println("\t" + name);
+                    }
                 }
                 if(line.contains("\"cve_id\"")) {
                     cve.nextLine();//oid
@@ -78,20 +80,24 @@ public class Downloader {
                 //Iterate over all links and download if needed
                 int linkC = 0;
                 for (Link link : cve.getLinks()) {
-                    File outDir = new File(output + cve.getId() + "/" + getPatchVersion(cve, link));
-                    outDir.mkdirs();
                     String patch = getPatchURL(link);
                     if(!patch.equals("NOT A PATCH")) {
-                        downloadFile(getPatchURL(link), new File(outDir.getAbsolutePath() + "/" + linkC + ".patch"), true);
+                        File outDir = new File(output + cve.getId() + "/" + getPatchVersion(cve, link));
+                        outDir.mkdirs();
+                        String base64 = "";
+                        if(isBase64Encoded(link)) {
+                            base64 = ".base64";
+                        }
+                        downloadFile(getPatchURL(link), new File(outDir.getAbsolutePath() + "/" + linkC + ".patch" + base64), true);
                         System.out.println("\t\tDownloaded " + link.getURL());
                         linkC++;
                     }
                     c++;//DEBUG
                 }
             }
-            if(c == 30) {//DEBUG
+/*            if(c == 30) {//DEBUG
                 break;
-            }
+            }*/
         }
     }
 
@@ -108,6 +114,13 @@ public class Downloader {
             return "https://review.lineageos.org/changes/" + id + "/revisions/1/patch?download"; //BASE64 ENCODED
         }
         return "NOT A PATCH";
+    }
+
+    private static boolean isBase64Encoded(Link link) {
+        if(link.getURL().contains("android.googlesource.com") || link.getURL().contains("review.lineageos.org")) {
+            return true;
+        }
+        return false;
     }
 
     private static String getPatchVersion(CVE cve, Link link) {
