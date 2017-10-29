@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 public class Downloader {
 
+    private static final String[] linuxVersions = new String[]{"3.0", "3.2", "3.4", "3.8", "3.10", "3.12", "3.16", "3.18", "4.4", "4.5", "4.8"};
     private static String cveJson = "/home/***REMOVED***/Downloads/cves";
     private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs-New/";
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
@@ -18,43 +19,49 @@ public class Downloader {
         //Read in all the CVEs from the JSON file
         //https://cve.lineageos.org/api/v1/cves
         try {
+            System.out.println("Parsing...");
             Scanner cve = new Scanner(new File(cveJson));
             String name = "";
             ArrayList<Link> links = new ArrayList<Link>();
-            String curDesc = "";
-            String curLink = "";
+            String curNotes = "";
             while(cve.hasNextLine()) {
                 String line = cve.nextLine();
+                String[] lineS = line.split("\"");
                 if(line.contains("cve_name")) {
-                    //Start the new CVE
-                    name = line.split("\"")[3];
-                    System.out.println("Starting " + name);
-                }
-                if(line.contains("\"desc\"")) {
-                    if(curDesc.length() > 0) {
-                        links.add(new Link(curLink, curDesc));
-                        System.out.println("\tAdded a new link to " + curLink);
-                        curDesc = curLink = "";
-                    }
-                    curDesc = line.split("\"")[3];
-                }
-                if(line.contains("\"link\"")) {
-                    curLink = line.split("\"")[3];
-                }
-                if(line.contains("\"notes\"")) {//End of element
-                    if(curDesc.length() > 0) {
-                        links.add(new Link(curLink, curDesc));
-                        System.out.println("\tAdded a new link to " + curLink);
-                        curDesc = curLink = "";
-                    }
-                    //Added the last CVE we scraped
                     if(name.length() > 0) {
-                        cves.add(new CVE(name, links));
-                        System.out.println("\tAdded with " + links.size() + " links");
-                        name = "";
+                        cves.add(new CVE(name, curNotes, links));
+                        System.out.println("\t\tAdded " + links.size() + " links");
                         links = new ArrayList<Link>();
-                        curDesc = curLink = "";
+                        name = curNotes = "";
                     }
+                    name = lineS[3];
+                    System.out.println("\t" + name);
+                }
+                if(line.contains("\"cve_id\"")) {
+                    cve.nextLine();//oid
+                    cve.nextLine();//}
+                    line = cve.nextLine();
+                    String desc = "";
+                    String link = "";
+                    if(line.contains("\"desc\"")) {
+                        desc = line.split("\"")[3];
+                    }
+                    if(line.contains("\"link\"")) {
+                        link = line.split("\"")[3];
+                    } else {
+                        line = cve.nextLine();
+                        if(line.contains("\"link\"")) {
+                            link = line.split("\"")[3];
+                        }
+                    }
+                    if(link.length() > 0) {
+                        links.add(new Link(link, desc));
+                        System.out.println("\t\tAdded a new link to " + link);
+                    }
+                }
+                if(line.contains("\"notes\"")) {
+                    //curNotes = lineS[3];
+                    //System.out.println("\t\tAdded a new note: " + curNotes);
                 }
             }
             cve.close();
@@ -65,20 +72,24 @@ public class Downloader {
         System.out.println("Downloading patches...");
         int c = 0;
         for(CVE cve : cves) {
+            System.out.println("\t" + cve.getId());
             //Only run if we have patches available
             if(cve.getLinks().size() > 0) {
                 //Iterate over all links and download if needed
                 int linkC = 0;
                 for (Link link : cve.getLinks()) {
-                    File outDir = new File(output + cve.getId());
+                    File outDir = new File(output + cve.getId() + "/" + getPatchVersion(cve, link));
                     outDir.mkdirs();
-                    downloadFile(getPatchURL(link), new File(outDir.getAbsolutePath() + "/" + linkC + ".patch"), true);
-                    System.out.println("\tDownloaded " + link.getURL());
-                    linkC++;
-                    c++;
+                    String patch = getPatchURL(link);
+                    if(!patch.equals("NOT A PATCH")) {
+                        downloadFile(getPatchURL(link), new File(outDir.getAbsolutePath() + "/" + linkC + ".patch"), true);
+                        System.out.println("\t\tDownloaded " + link.getURL());
+                        linkC++;
+                    }
+                    c++;//DEBUG
                 }
             }
-            if(c == 10) {
+            if(c == 30) {//DEBUG
                 break;
             }
         }
@@ -96,7 +107,20 @@ public class Downloader {
             //TODO: Dynamically get revision
             return "https://review.lineageos.org/changes/" + id + "/revisions/1/patch?download"; //BASE64 ENCODED
         }
-        return "";
+        return "NOT A PATCH";
+    }
+
+    private static String getPatchVersion(CVE cve, Link link) {
+        String result = "";
+        for(String version : linuxVersions) {
+            if(link.getDesc().contains(version)) {
+                result = version;
+            }
+        }
+        if(result.length() == 0) {
+            result = "ANY";
+        }
+        return result;
     }
 
     public static void downloadFile(String url, File out, boolean useCache) {
@@ -121,19 +145,25 @@ public class Downloader {
 
     public static class CVE {
         private String id;
+        private String notes;
         private ArrayList<Link> links;
 
-        public CVE(String id, ArrayList<Link> links) {
+        public CVE(String id, String notes, ArrayList<Link> links) {
             this.id = id;
+            this.notes = notes;
             this.links = links;
-        }
-
-        public ArrayList<Link> getLinks() {
-            return links;
         }
 
         public String getId() {
             return id;
+        }
+
+        public String getNotes() {
+            return notes;
+        }
+
+        public ArrayList<Link> getLinks() {
+            return links;
         }
     }
 
