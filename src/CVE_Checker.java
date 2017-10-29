@@ -2,7 +2,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 public class CVE_Checker {
 
@@ -38,14 +37,15 @@ public class CVE_Checker {
                 System.out.println("Checking " + cveReal);
                 File[] cveSubs = cve.listFiles(File::isFile);
                 if (cveSubs != null && cveSubs.length > 0) {
+                    Arrays.sort(cveSubs);
                     Runtime rt = Runtime.getRuntime();
                     int exitCounter = 0;
                     ArrayList<String> commands = new ArrayList<String>();
                     for (File cveSub : cveSubs) {
                         try {
-                            String command = "git -C " + kernel + " apply --3way --check " + cveSub.toString();
+                            String command = "git -C " + kernel + " apply --check " + cveSub.toString();
                             commands.add(command.replaceAll(" --check", ""));
-                            //System.out.println("\tTesting patch: " + command);
+                            System.out.println("\tTesting patch: " + command);
                             Process git = rt.exec(command);
                             while (git.isAlive()) {
                                 //Do nothing
@@ -59,17 +59,19 @@ public class CVE_Checker {
                         System.out.println("\tSuccessfully able to patch " + cveReal);
                         for(String command : commands) {
                             try {
-                                //System.out.println("\tApplying patch: " + command);
+                                System.out.println("\tApplying patch: " + command);
                                 Process git = rt.exec(command);
                                 while (git.isAlive()) {
                                     //Do nothing
                                 }
+                                if(git.exitValue() != 0) {
+                                    System.out.println("Failed: " + command);
+                                    System.exit(1);
+                                }
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
-                            String commandScript = command
-                                .replaceAll(" -C " + kernel, "")
-                                .replaceAll(patches, patchesScript);
+                            String commandScript = command.replaceAll(" -C " + kernel, "").replaceAll(patches, patchesScript);
                             scriptCommands.add(commandScript);
                         }
                     } else {
