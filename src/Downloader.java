@@ -72,7 +72,12 @@ public class Downloader {
 
         System.out.println("Downloading patches...");
         int c = 0;
+        boolean skip = true;
         for (CVE cve : cves) {
+            if(cve.getId().equals("CVE-2016-3775")) {
+                skip = false;
+            }
+            if(!skip) {
             System.out.println("\t" + cve.getId());
             //Only run if we have patches available
             if (cve.getLinks().size() > 0) {
@@ -113,23 +118,29 @@ public class Downloader {
 /*            if(c == 30) {//DEBUG
                 break;
             }*/
+            }
         }
     }
 
     private static String getPatchURL(Link link) {
-        if (link.getURL().contains("github.com")) {
-            return link.getURL() + ".patch";
-        } else if (link.getURL().contains("git.kernel.org") || link.getURL().contains("source.codeaurora.org")) {
-            return link.getURL().replaceAll("commit", "patch");
-        } else if (link.getURL().contains("android.googlesource.com")) {
+        String url = link.getURL();
+        if (url.contains("github.com")) {
+            return url + ".patch";
+        } else if (url.contains("git.kernel.org") || url.contains("source.codeaurora.org")) {
+            return url.replaceAll("commit", "patch");
+        } else if (url.contains("android.googlesource.com")) {
             String add = "";
-            if(!link.getURL().contains("%5E%21/")) {
+            if(!url.contains("%5E%21")) {
                 add += "%5E%21/";
             }
             add += "?format=TEXT";
-            return link.getURL() + add; //BASE64 ENCODED
-        } else if (link.getURL().contains("review.lineageos.org") && !link.getURL().contains("topic")) {
-            String id = link.getURL().split("/")[3];
+            return url.replaceAll("/#F0", "") + add; //BASE64 ENCODED
+        } else if (url.contains("review.lineageos.org") && !url.contains("topic") && !url.contains("#/q")) {
+            int idS = 3;
+            if(url.contains("#/c")) {
+                idS = 5;
+            }
+            String id = url.split("/")[idS];
             //TODO: Dynamically get revision
             return "https://review.lineageos.org/changes/" + id + "/revisions/1/patch?download"; //BASE64 ENCODED
         }
