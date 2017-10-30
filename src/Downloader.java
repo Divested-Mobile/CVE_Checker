@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
@@ -10,7 +11,7 @@ public class Downloader {
 
     private static final String[] linuxVersions = new String[] {"3.0", "3.2", "3.4", "3.8", "3.10", "3.12", "3.16", "3.18", "4.4", "4.5", "4.8"};
     private static String cveJson = "/home/***REMOVED***/Downloads/cves";
-    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs-New/";
+    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
 
     public static void main(String[] args) {
@@ -86,8 +87,24 @@ public class Downloader {
                         if (isBase64Encoded(link)) {
                             base64 = ".base64";
                         }
-                        downloadFile(patch, new File(outDir.getAbsolutePath() + "/" + linkC + ".patch" + base64), true);
+                        String patchOutput = outDir.getAbsolutePath() + "/" + linkC + ".patch" + base64;
+                        downloadFile(patch, new File(patchOutput), true);
+                        if (isBase64Encoded(link)) {
+                            Runtime rt = Runtime.getRuntime();
+                            try {
+                                Process b64dec = rt.exec(new String[]{"/bin/sh", "-c", "base64 -d " + patchOutput + " > " + patchOutput.replaceAll(base64, "")});
+                                while (b64dec.isAlive()) {
+                                    //Do nothing
+                                }
+                                if (b64dec.exitValue() != 0) {
+                                    System.exit(1);
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
                         System.out.println("\t\tDownloaded " + link.getURL());
+                        //System.out.println("\t\t\tReal URL " + patch);
                         linkC++;
                     }
                     c++;//DEBUG
@@ -105,7 +122,12 @@ public class Downloader {
         } else if (link.getURL().contains("git.kernel.org") || link.getURL().contains("source.codeaurora.org")) {
             return link.getURL().replaceAll("commit", "patch");
         } else if (link.getURL().contains("android.googlesource.com")) {
-            return link.getURL() + "?format=TEXT"; //BASE64 ENCODED
+            String add = "";
+            if(!link.getURL().contains("%5E%21/")) {
+                add += "%5E%21/";
+            }
+            add += "?format=TEXT";
+            return link.getURL() + add; //BASE64 ENCODED
         } else if (link.getURL().contains("review.lineageos.org") && !link.getURL().contains("topic")) {
             String id = link.getURL().split("/")[3];
             //TODO: Dynamically get revision

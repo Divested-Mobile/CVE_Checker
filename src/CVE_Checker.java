@@ -35,15 +35,15 @@ public class CVE_Checker {
 
         try {
             Scanner kernelMakefile = new Scanner(new File(base + kernelPath + "/Makefile"));
-            while(kernelMakefile.hasNextLine()) {
+            while (kernelMakefile.hasNextLine()) {
                 String line = kernelMakefile.nextLine();
-                if(line.startsWith("VERSION = ")) {
+                if (line.startsWith("VERSION = ")) {
                     kernelVersion = line.split("= ")[1];
                 }
-                if(line.startsWith("PATCHLEVEL = ")) {
+                if (line.startsWith("PATCHLEVEL = ")) {
                     kernelVersion += "." + line.split("= ")[1];
                 }
-                if(line.startsWith("NAME = ")) {
+                if (line.startsWith("NAME = ")) {
                     break;
                 }
             }
@@ -67,17 +67,19 @@ public class CVE_Checker {
                         int exitCounter = 0;
                         ArrayList<String> commands = new ArrayList<String>();
                         for (File cveSub : cveSubs) {
-                            try {
-                                String command = "git -C " + kernel + " apply --check " + cveSub.toString();
-                                commands.add(command.replaceAll(" --check", ""));
-                                System.out.println("\tTesting patch: " + command);
-                                Process git = rt.exec(command);
-                                while (git.isAlive()) {
-                                    //Do nothing
+                            if (!cveSub.toString().contains(".base64") && !cveSub.toString().contains(".disabled")) {
+                                try {
+                                    String command = "git -C " + kernel + " apply --check " + cveSub.toString();
+                                    commands.add(command.replaceAll(" --check", ""));
+                                    System.out.println("\tTesting patch: " + command);
+                                    Process git = rt.exec(command);
+                                    while (git.isAlive()) {
+                                        //Do nothing
+                                    }
+                                    exitCounter += git.exitValue();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
                                 }
-                                exitCounter += git.exitValue();
-                            } catch (IOException e) {
-                                e.printStackTrace();
                             }
                         }
                         if (exitCounter == 0) {
