@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
-public class CVE_Checker {
+public class Patcher {
 
     private static String prefix = "android_kernel_";
-    private static String patches = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs-New/";
+    private static String patches = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
     private static String patchesScript = "\\$cvePatches/";
     private static String base = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
     private static String outputBase = "/mnt/Drive-1/Development/Other/Android_ROMs/Scripts/LineageOS-14.1/CVE_Patchers/";
@@ -67,7 +67,7 @@ public class CVE_Checker {
                         int exitCounter = 0;
                         ArrayList<String> commands = new ArrayList<String>();
                         for (File cveSub : cveSubs) {
-                            if (!cveSub.toString().contains(".base64") && !cveSub.toString().contains(".disabled")) {
+                            if (!cveSub.toString().contains(".base64") && !cveSub.toString().contains(".disabled") && !cveSub.toString().contains(".dupe")) {
                                 try {
                                     String command = "git -C " + kernel + " apply --check " + cveSub.toString();
                                     commands.add(command.replaceAll(" --check", ""));

@@ -11,7 +11,7 @@ public class Downloader {
 
     private static final String[] linuxVersions = new String[] {"3.0", "3.2", "3.4", "3.8", "3.10", "3.12", "3.16", "3.18", "4.4", "4.5", "4.8"};
     private static String cveJson = "/home/***REMOVED***/Downloads/cves";
-    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
+    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs-New/";
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
 
     public static void main(String[] args) {
@@ -72,49 +72,49 @@ public class Downloader {
 
         System.out.println("Downloading patches...");
         int c = 0;
-        boolean skip = true;
+        boolean skip = false;
         for (CVE cve : cves) {
-            if(cve.getId().equals("CVE-2016-3775")) {
+/*            if(cve.getId().equals("CVE-2014-8709")) {
                 skip = false;
-            }
-            if(!skip) {
-            System.out.println("\t" + cve.getId());
-            //Only run if we have patches available
-            if (cve.getLinks().size() > 0) {
-                //Iterate over all links and download if needed
-                int linkC = 0;
-                for (Link link : cve.getLinks()) {
-                    String patch = getPatchURL(link);
-                    if (!patch.equals("NOT A PATCH")) {
-                        File outDir = new File(output + cve.getId() + "/" + getPatchVersion(cve, link));
-                        outDir.mkdirs();
-                        String base64 = "";
-                        if (isBase64Encoded(link)) {
-                            base64 = ".base64";
-                        }
-                        String patchOutput = outDir.getAbsolutePath() + "/" + linkC + ".patch" + base64;
-                        downloadFile(patch, new File(patchOutput), true);
-                        if (isBase64Encoded(link)) {
-                            Runtime rt = Runtime.getRuntime();
-                            try {
-                                Process b64dec = rt.exec(new String[]{"/bin/sh", "-c", "base64 -d " + patchOutput + " > " + patchOutput.replaceAll(base64, "")});
-                                while (b64dec.isAlive()) {
-                                    //Do nothing
-                                }
-                                if (b64dec.exitValue() != 0) {
-                                    System.exit(1);
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
+            }*/
+            if (!skip) {
+                System.out.println("\t" + cve.getId());
+                //Only run if we have patches available
+                if (cve.getLinks().size() > 0) {
+                    //Iterate over all links and download if needed
+                    int linkC = 0;
+                    for (Link link : cve.getLinks()) {
+                        String patch = getPatchURL(link);
+                        if (!patch.equals("NOT A PATCH")) {
+                            File outDir = new File(output + cve.getId() + "/" + getPatchVersion(cve, link));
+                            outDir.mkdirs();
+                            String base64 = "";
+                            if (isBase64Encoded(link)) {
+                                base64 = ".base64";
                             }
+                            String patchOutput = outDir.getAbsolutePath() + "/" + linkC + ".patch" + base64;
+                            downloadFile(patch, new File(patchOutput), true);
+                            if (isBase64Encoded(link)) {
+                                Runtime rt = Runtime.getRuntime();
+                                try {
+                                    Process b64dec = rt.exec(new String[] {"/bin/sh", "-c", "base64 -d " + patchOutput + " > " + patchOutput.replaceAll(base64, "")});
+                                    while (b64dec.isAlive()) {
+                                        //Do nothing
+                                    }
+                                    if (b64dec.exitValue() != 0) {
+                                        System.exit(1);
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            System.out.println("\t\tDownloaded " + link.getURL());
+                            //System.out.println("\t\t\tReal URL " + patch);
+                            linkC++;
                         }
-                        System.out.println("\t\tDownloaded " + link.getURL());
-                        //System.out.println("\t\t\tReal URL " + patch);
-                        linkC++;
+                        c++;//DEBUG
                     }
-                    c++;//DEBUG
                 }
-            }
 /*            if(c == 30) {//DEBUG
                 break;
             }*/
@@ -123,21 +123,23 @@ public class Downloader {
     }
 
     private static String getPatchURL(Link link) {
-        String url = link.getURL();
+        String url = link.getURL().replaceAll("http://", "https://");
         if (url.contains("github.com")) {
             return url + ".patch";
-        } else if (url.contains("git.kernel.org") || url.contains("source.codeaurora.org")) {
+        } else if (url.contains("git.kernel.org")) {
+            return url.replaceAll("cgit/", "pub/scm/").replaceAll("commit", "patch");
+        } else if (url.contains("source.codeaurora.org")) {
             return url.replaceAll("commit", "patch");
         } else if (url.contains("android.googlesource.com")) {
             String add = "";
-            if(!url.contains("%5E%21")) {
+            if (!url.contains("%5E%21")) {
                 add += "%5E%21/";
             }
             add += "?format=TEXT";
             return url.replaceAll("/#F0", "") + add; //BASE64 ENCODED
         } else if (url.contains("review.lineageos.org") && !url.contains("topic") && !url.contains("#/q")) {
             int idS = 3;
-            if(url.contains("#/c")) {
+            if (url.contains("#/c")) {
                 idS = 5;
             }
             String id = url.split("/")[idS];
