@@ -65,6 +65,15 @@ public class Patcher {
                                     while (git.isAlive()) {
                                         //Do nothing
                                     }
+                                    Scanner gitOut = new Scanner(git.getErrorStream());
+                                    while(gitOut.hasNextLine()) {//3way check conflicts exit with 0
+                                        String line = gitOut.nextLine();
+                                        if(line.contains("with conflicts")) {
+                                            exitCounter += 1;
+                                            //System.out.println("CONFLICT DETECTED!");
+                                        }
+                                    }
+                                    gitOut.close();
                                     exitCounter += git.exitValue();
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -192,11 +201,23 @@ public class Patcher {
         }
 
         public boolean isGreaterVersion(KernelVersion comparedTo) {
-            return (getVersion() >= comparedTo.getVersion() && getPatchLevel() >= comparedTo.getPatchLevel());
+            if(getVersion() > comparedTo.getVersion()) {
+                return true;
+            }
+            if(getVersion() == comparedTo.getVersion() && getPatchLevel() >= comparedTo.getPatchLevel()) {
+                return true;
+            }
+            return false;
         }
 
         public boolean isLesserVersion(KernelVersion comparedTo) {
-            return (getVersion() <= comparedTo.getVersion() && getPatchLevel() <= comparedTo.getPatchLevel());
+            if(getVersion() < comparedTo.getVersion()) {
+                return true;
+            }
+            if(getVersion() == comparedTo.getVersion() && getPatchLevel() <= comparedTo.getPatchLevel()) {
+                return true;
+            }
+            return false;
         }
     }
 
