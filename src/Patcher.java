@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class Patcher {
 
     private static String prefix = "android_kernel_";
-    private static String patches = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs-New/";
+    private static String patches = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
     private static String patchesScript = "\\$cvePatches/";
     private static String base = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
     private static String outputBase = "/mnt/Drive-1/Development/Other/Android_ROMs/Scripts/LineageOS-14.1/CVE_Patchers/";
@@ -81,6 +81,7 @@ public class Patcher {
                                         //Do nothing
                                     }
                                     if (git.exitValue() != 0) {
+                                        System.out.println("Potential duplicate patch detected!");
                                         System.out.println("Failed: " + command);
                                         System.exit(1);
                                     }

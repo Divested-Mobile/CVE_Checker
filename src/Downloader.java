@@ -11,7 +11,7 @@ public class Downloader {
 
     private static final String[] linuxVersions = new String[] {"3.0", "3.2", "3.4", "3.8", "3.10", "3.12", "3.16", "3.18", "4.4", "4.5", "4.8"};
     private static String cveJson = "/home/***REMOVED***/Downloads/cves"; //https://cve.lineageos.org/api/v1/cves
-    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs-New/";
+    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
     private static final String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36";
 
@@ -74,11 +74,11 @@ public class Downloader {
         }
 
         System.out.println("Downloading patches...");
-        boolean skip = true;
+        boolean skip = false;
         for (CVE cve : cves) {
-            if(cve.getId().equals("CVE-2016-3841")) {
+/*            if(cve.getId().equals("CVE-2017-11054")) {
                 skip = false;
-            }
+            }*/
             if(!skip) {
                 System.out.println("\t" + cve.getId());
                 //Only run if we have patches available
@@ -169,7 +169,7 @@ public class Downloader {
                 if (result.length() > 0) {
                     result += "-";
                 }
-                result += "^" + version;
+                result += "^" + version;//Sssh < doesn't work for some reason, ^ is similar enough yea? yea???
             }
         }
         if (result.length() == 0) {
@@ -194,6 +194,7 @@ public class Downloader {
             }
             connection.disconnect();
         } catch (Exception e) {
+            System.out.println("Throttling? Too many files open?");
             e.printStackTrace();
             System.exit(1);
         }
