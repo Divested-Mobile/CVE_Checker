@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class Patcher {
 
     private static String prefix = "android_kernel_";
-    private static String patches = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
+    private static String patches = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs-New/";
     private static String patchesScript = "\\$cvePatches/";
     private static String base = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
     private static String outputBase = "/mnt/Drive-1/Development/Other/Android_ROMs/Scripts/LineageOS-14.1/CVE_Patchers/";
@@ -31,34 +31,23 @@ public class Patcher {
     public static void genScript(String kernelName, String kernelPath, String kernel) {
         String output = outputBase + kernelName + ".sh";
         ArrayList<String> scriptCommands = new ArrayList<String>();
-        String kernelVersion = "ERROR";
 
-        try {
-            Scanner kernelMakefile = new Scanner(new File(base + kernelPath + "/Makefile"));
-            while (kernelMakefile.hasNextLine()) {
-                String line = kernelMakefile.nextLine();
-                if (line.startsWith("VERSION = ")) {
-                    kernelVersion = line.split("= ")[1];
-                }
-                if (line.startsWith("PATCHLEVEL = ")) {
-                    kernelVersion += "." + line.split("= ")[1];
-                }
-                if (line.startsWith("NAME = ")) {
-                    break;
-                }
-            }
-            kernelMakefile.close();
-            System.out.println("DETECTED VERSION " + kernelVersion);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        KernelVersion kernelVersion = getKernelVersion(kernelPath);
+
         File[] cves = new File(patches).listFiles(File::isDirectory);
         if (cves != null && cves.length > 0) {
             Arrays.sort(cves);
             for (File cve : cves) {
                 String cveReal = cve.toString().split("/")[8];
                 System.out.println("Checking " + cveReal);
-                String[] versions = new String[] {kernelVersion, "ANY"};
+                File[] cvePatchVersions =  new File(cve.getAbsolutePath()).listFiles(File::isDirectory);
+                ArrayList<String> versions = new ArrayList<String>();
+                for (File cvePatchVersion : cvePatchVersions) {
+                    String patchVersion = cvePatchVersion.getAbsolutePath().split("/")[9];
+                    if(isVersionInRange(kernelVersion, patchVersion)) {
+                        versions.add(patchVersion);
+                    }
+                }
                 for (String version : versions) {
                     File[] cveSubs = new File(cve.getAbsolutePath() + "/" + version + "/").listFiles(File::isFile);
                     if (cveSubs != null && cveSubs.length > 0) {
@@ -126,6 +115,87 @@ public class Patcher {
             out.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static boolean isVersionInRange(KernelVersion kernel, String patch) {
+        if(patch.equals("ANY")) {
+            return true;
+        } else if (kernel.getVersionFull().equals(patch)) {
+            return true;
+        } else if(patch.startsWith("^")) {
+            KernelVersion patchVersion = new KernelVersion(patch.replaceAll("\\^", ""));
+            return kernel.isLesserVersion(patchVersion);
+        } else if(patch.contains("-^")) {
+            String[] patchS = patch.split("-\\^");
+            KernelVersion patchVersionLower = new KernelVersion(patchS[0]);
+            KernelVersion patchVersionHigher = new KernelVersion(patchS[1]);
+            return (kernel.isGreaterVersion(patchVersionLower) && kernel.isLesserVersion(patchVersionHigher));
+        }
+        return false;
+    }
+
+    public static KernelVersion getKernelVersion(String path) {
+        String kernelVersion = "";
+        try {
+            Scanner kernelMakefile = new Scanner(new File(base + path + "/Makefile"));
+            while (kernelMakefile.hasNextLine()) {
+                String line = kernelMakefile.nextLine();
+                if (line.startsWith("VERSION = ")) {
+                    kernelVersion = line.split("= ")[1];
+                }
+                if (line.startsWith("PATCHLEVEL = ")) {
+                    kernelVersion += "." + line.split("= ")[1];
+                }
+                if (line.startsWith("NAME = ")) {
+                    break;
+                }
+            }
+            kernelMakefile.close();
+            System.out.println("DETECTED VERSION " + kernelVersion);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return new KernelVersion(kernelVersion);
+    }
+
+    public static class KernelVersion {
+
+        private String versionFull = "";
+        private int version = 0;
+        private int patchLevel = 0;
+
+        public KernelVersion(String version) {
+            this.versionFull = version;
+            String[] versionSplit = version.split("\\.");
+            this.version = Integer.valueOf(versionSplit[0]);
+            this.patchLevel = Integer.valueOf(versionSplit[1]);
+        }
+
+        public KernelVersion(int version, int patchLevel) {
+            this.versionFull = version + "." + patchLevel;
+            this.version = version;
+            this.patchLevel = patchLevel;
+        }
+
+        public String getVersionFull() {
+            return versionFull;
+        }
+
+        public int getVersion() {
+            return version;
+        }
+
+        public int getPatchLevel() {
+            return patchLevel;
+        }
+
+        public boolean isGreaterVersion(KernelVersion comparedTo) {
+            return (getVersion() >= comparedTo.getVersion() && getPatchLevel() >= comparedTo.getPatchLevel());
+        }
+
+        public boolean isLesserVersion(KernelVersion comparedTo) {
+            return (getVersion() <= comparedTo.getVersion() && getPatchLevel() <= comparedTo.getPatchLevel());
         }
     }
 

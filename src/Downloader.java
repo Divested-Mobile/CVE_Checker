@@ -13,6 +13,7 @@ public class Downloader {
     private static String cveJson = "/home/***REMOVED***/Downloads/cves"; //https://cve.lineageos.org/api/v1/cves
     private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs-New/";
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
+    private static final String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36";
 
     public static void main(String[] args) {
         //Read in all the CVEs from the JSON file
@@ -69,41 +70,48 @@ public class Downloader {
             cve.close();
         } catch (Exception e) {
             e.printStackTrace();
+            System.exit(1);
         }
 
         System.out.println("Downloading patches...");
+        boolean skip = true;
         for (CVE cve : cves) {
-            System.out.println("\t" + cve.getId());
-            //Only run if we have patches available
-            if (cve.getLinks().size() > 0) {
-                //Iterate over all links and download if needed
-                int linkC = 0;
-                for (Link link : cve.getLinks()) {
-                    String patch = getPatchURL(link);
-                    if (!patch.equals("NOT A PATCH")) {
-                        File outDir = new File(output + cve.getId() + "/" + getPatchVersion(cve, link));
-                        outDir.mkdirs();
-                        String base64 = "";
-                        if (isBase64Encoded(link)) {
-                            base64 = ".base64";
-                        }
-                        String patchOutput = outDir.getAbsolutePath() + "/" + linkC + ".patch" + base64;
-                        downloadFile(patch, new File(patchOutput), true);
-                        if (isBase64Encoded(link)) {
-                            try {
-                                Process b64dec = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c", "base64 -d " + patchOutput + " > " + patchOutput.replaceAll(base64, "")});
-                                while (b64dec.isAlive()) {
-                                    //Do nothing
-                                }
-                                if (b64dec.exitValue() != 0) {
-                                    System.exit(1);
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
+            if(cve.getId().equals("CVE-2016-3841")) {
+                skip = false;
+            }
+            if(!skip) {
+                System.out.println("\t" + cve.getId());
+                //Only run if we have patches available
+                if (cve.getLinks().size() > 0) {
+                    //Iterate over all links and download if needed
+                    int linkC = 0;
+                    for (Link link : cve.getLinks()) {
+                        String patch = getPatchURL(link);
+                        if (!patch.equals("NOT A PATCH")) {
+                            File outDir = new File(output + cve.getId() + "/" + getPatchVersion(cve, link));
+                            outDir.mkdirs();
+                            String base64 = "";
+                            if (isBase64Encoded(link)) {
+                                base64 = ".base64";
                             }
+                            String patchOutput = outDir.getAbsolutePath() + "/" + linkC + ".patch" + base64;
+                            downloadFile(patch, new File(patchOutput), true);
+                            if (isBase64Encoded(link)) {
+                                try {
+                                    Process b64dec = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c", "base64 -d " + patchOutput + " > " + patchOutput.replaceAll(base64, "")});
+                                    while (b64dec.isAlive()) {
+                                        //Do nothing
+                                    }
+                                    if (b64dec.exitValue() != 0) {
+                                        System.exit(1);
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            System.out.println("\t\tDownloaded " + link.getURL());
+                            linkC++;
                         }
-                        System.out.println("\t\tDownloaded " + link.getURL());
-                        linkC++;
                     }
                 }
             }
@@ -161,7 +169,7 @@ public class Downloader {
                 if (result.length() > 0) {
                     result += "-";
                 }
-                result += "<" + version;
+                result += "^" + version;
             }
         }
         if (result.length() == 0) {
@@ -175,7 +183,7 @@ public class Downloader {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setConnectTimeout(45000);
             connection.setReadTimeout(45000);
-            connection.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; rv:6.0) Gecko/20100101 Firefox/19.0");
+            connection.addRequestProperty("User-Agent", userAgent);
             if (useCache && out.exists()) {
                 connection.setIfModifiedSince(out.lastModified());
             }
@@ -187,6 +195,7 @@ public class Downloader {
             connection.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
+            System.exit(1);
         }
     }
 
