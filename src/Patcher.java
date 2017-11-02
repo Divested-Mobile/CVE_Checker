@@ -65,15 +65,17 @@ public class Patcher {
                                     while (git.isAlive()) {
                                         //Do nothing
                                     }
-                                    Scanner gitOut = new Scanner(git.getErrorStream());
-                                    while(gitOut.hasNextLine()) {//3way check conflicts exit with 0
-                                        String line = gitOut.nextLine();
-                                        if(line.contains("with conflicts")) {
-                                            exitCounter += 1;
-                                            //System.out.println("CONFLICT DETECTED!");
+                                    if(command.contains("--3way")) {
+                                        Scanner gitOut = new Scanner(git.getErrorStream());
+                                        while (gitOut.hasNextLine()) {//3way check conflicts exit with 0
+                                            String line = gitOut.nextLine();
+                                            if (line.contains("with conflicts")) {
+                                                exitCounter += 1;
+                                                //System.out.println("CONFLICT DETECTED!");
+                                            }
                                         }
+                                        gitOut.close();
                                     }
-                                    gitOut.close();
                                     exitCounter += git.exitValue();
                                 } catch (IOException e) {
                                     e.printStackTrace();
