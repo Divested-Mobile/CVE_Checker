@@ -9,9 +9,8 @@ import java.util.Scanner;
 
 public class Downloader {
 
-    private static final String[] linuxVersions = new String[] {"3.0", "3.2", "3.4", "3.8", "3.10", "3.12", "3.16", "3.18", "4.4", "4.5", "4.8"};
-    private static String cveJson = "/home/***REMOVED***/Downloads/cves"; //https://cve.lineageos.org/api/v1/cves
-    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
+    private static String cveJson = "/home/***REMOVED***/Development/Other/Android_ROMs/Patches/Linux_CVEs/Kernel_CVE_Patch_List.txt";
+    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs-New/";
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
     private static final String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36";
 
@@ -21,50 +20,39 @@ public class Downloader {
             System.out.println("Parsing...");
             Scanner cve = new Scanner(new File(cveJson));
             String name = "";
+            boolean depends = false;
             ArrayList<Link> links = new ArrayList<Link>();
-            String curNotes = "";
             while (cve.hasNextLine()) {
                 String line = cve.nextLine();
-                String[] lineS = line.split("\"");
-                if (line.contains("cve_name") || !cve.hasNextLine()) {
+                if(line.startsWith("#")) {
+                    //Comment, ignore
+                } else if (line.startsWith("CVE") || line.startsWith("LVT") || !cve.hasNextLine()) {
                     if (name.length() > 0) {
-                        cves.add(new CVE(name, curNotes, links));
+                        cves.add(new CVE(name, depends, links));
                         System.out.println("\t\tAdded " + links.size() + " links");
                         links = new ArrayList<Link>();
-                        name = curNotes = "";
+                        name = "";
+                        depends = false;
                     }
                     if (cve.hasNextLine()) {
-                        name = lineS[3];
+                        name = line;
                         System.out.println("\t" + name);
                     }
-                }
-                if (line.contains("\"cve_id\"")) {
-                    cve.nextLine();//oid
-                    cve.nextLine();//}
-                    line = cve.nextLine();
-                    String desc = "";
+                } else if(line.startsWith("Depends")) {
+                    depends = true;
+                } else if(line.contains("Link - ")) {
+                    String[] lineS = line.split(" - ");
                     String link = "";
-                    if (line.contains("\"desc\"")) {
-                        desc = line.split("\"")[3];
-                    }
-                    if (line.contains("\"link\"")) {
-                        link = line.split("\"")[3];
+                    String version = "";
+                    if(lineS.length > 2) {
+                        version = lineS[1];
+                        link = lineS[2];
                     } else {
-                        line = cve.nextLine();
-                        if (line.contains("\"link\"")) {
-                            link = line.split("\"")[3];
-                        }
+                        version = "ANY";
+                        link = lineS[1];
                     }
-                    if (link.length() > 0) {
-                        links.add(new Link(link, desc));
-                        System.out.println("\t\tAdded a new link to " + link);
-                    }
-                }
-                if (line.contains("\"notes\"")) {
-                    if (lineS.length > 3) {
-                        curNotes = lineS[3];
-                        System.out.println("\t\tAdded a new note: " + curNotes);
-                    }
+                    links.add(new Link(link, version));
+                    System.out.println("\t\tAdded a new link to " + link);
                 }
             }
             cve.close();
@@ -74,21 +62,26 @@ public class Downloader {
         }
 
         System.out.println("Downloading patches...");
-        boolean skip = false;
+        boolean skipIfExists = true;
         for (CVE cve : cves) {
-/*            if(cve.getId().equals("CVE-2017-11054")) {
-                skip = false;
-            }*/
-            if(!skip) {
+            if(!(skipIfExists && new File(output + cve.getId()).exists())) {
                 System.out.println("\t" + cve.getId());
                 //Only run if we have patches available
                 if (cve.getLinks().size() > 0) {
+                    if(cve.getDepends()) {
+                        File depends = new File(output + cve.getId() + "/depends");
+                        try {
+                            depends.createNewFile();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                     //Iterate over all links and download if needed
                     int linkC = 0;
                     for (Link link : cve.getLinks()) {
                         String patch = getPatchURL(link);
                         if (!patch.equals("NOT A PATCH")) {
-                            File outDir = new File(output + cve.getId() + "/" + getPatchVersion(cve, link));
+                            File outDir = new File(output + cve.getId() + "/" + link.getVersion());
                             outDir.mkdirs();
                             String base64 = "";
                             if (isBase64Encoded(link)) {
@@ -124,7 +117,7 @@ public class Downloader {
             return url + ".patch";
         } else if (url.contains("git.kernel.org")) {
             return url.replaceAll("cgit/", "pub/scm/").replaceAll("commit", "patch");
-        } else if (url.contains("source.codeaurora.org")) {
+        } else if (url.contains("source.codeaurora.org") || url.contains("www.codeaurora.org")) {
             return url.replaceAll("commit", "patch");
         } else if (url.contains("android.googlesource.com")) {
             String add = "";
@@ -152,32 +145,6 @@ public class Downloader {
         return false;
     }
 
-    private static String getPatchVersion(CVE cve, Link link) {
-        String note = cve.getNotes().toLowerCase();
-        String result = "";
-        for (String version : linuxVersions) {//Gather version from link description
-            if (link.getDesc().contains(version)) {
-                result = version;
-            }
-        }
-        for (String version : linuxVersions) {//Gather version from note
-            if ((note.startsWith("kernel before " + version) && note.length() <= 21)
-                || (note.startsWith("kernel up to " + version) && note.length() <= 20)
-                || (note.startsWith("kernel < " + version) && note.length() <= 16)
-                || (note.startsWith("linux kernel before " + version) && note.length() <= 27)
-                || (note.startsWith("kernel through " + version) && note.length() <= 22)) {
-                if (result.length() > 0) {
-                    result += "-";
-                }
-                result += "^" + version;//Sssh < doesn't work for some reason, ^ is similar enough yea? yea???
-            }
-        }
-        if (result.length() == 0) {
-            result = "ANY";
-        }
-        return result;
-    }
-
     public static void downloadFile(String url, File out, boolean useCache) {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
@@ -202,12 +169,12 @@ public class Downloader {
 
     public static class CVE {
         private String id;
-        private String notes;
+        private boolean depends;
         private ArrayList<Link> links;
 
-        public CVE(String id, String notes, ArrayList<Link> links) {
+        public CVE(String id, boolean depends, ArrayList<Link> links) {
             this.id = id;
-            this.notes = notes;
+            this.depends = depends;
             this.links = links;
         }
 
@@ -215,8 +182,8 @@ public class Downloader {
             return id;
         }
 
-        public String getNotes() {
-            return notes;
+        public boolean getDepends() {
+            return depends;
         }
 
         public ArrayList<Link> getLinks() {
@@ -224,22 +191,21 @@ public class Downloader {
         }
     }
 
-
     public static class Link {
         private String url;
-        private String desc;
+        private String version;
 
-        public Link(String url, String desc) {
+        public Link(String url, String version) {
             this.url = url;
-            this.desc = desc;
+            this.version = version;
         }
 
         public String getURL() {
             return url;
         }
 
-        public String getDesc() {
-            return desc;
+        public String getVersion() {
+            return version;
         }
     }
 
