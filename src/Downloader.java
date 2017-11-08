@@ -10,7 +10,7 @@ import java.util.Scanner;
 public class Downloader {
 
     private static String cveJson = "/home/***REMOVED***/Development/Other/Android_ROMs/Patches/Linux_CVEs/Kernel_CVE_Patch_List.txt";
-    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs-New/";
+    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
     private static final String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36";
 
@@ -38,7 +38,7 @@ public class Downloader {
                         name = line;
                         System.out.println("\t" + name);
                     }
-                } else if(line.startsWith("Depends")) {
+                } else if(line.contains("Depends")) {
                     depends = true;
                 } else if(line.contains("Link - ")) {
                     String[] lineS = line.split(" - ");
@@ -70,14 +70,10 @@ public class Downloader {
                 if (cve.getLinks().size() > 0) {
                     if(cve.getDepends()) {
                         File depends = new File(output + cve.getId() + "/depends");
-                        try {
-                            depends.createNewFile();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        depends.mkdirs();
                     }
                     //Iterate over all links and download if needed
-                    int linkC = 0;
+                    int linkC = 1;
                     for (Link link : cve.getLinks()) {
                         String patch = getPatchURL(link);
                         if (!patch.equals("NOT A PATCH")) {
@@ -87,8 +83,8 @@ public class Downloader {
                             if (isBase64Encoded(link)) {
                                 base64 = ".base64";
                             }
-                            String patchOutput = outDir.getAbsolutePath() + "/" + linkC + ".patch" + base64;
-                            downloadFile(patch, new File(patchOutput), true);
+                            String patchOutput = outDir.getAbsolutePath() + "/" + String.format("%04d", linkC) + ".patch" + base64;
+                            downloadFile(patch, new File(patchOutput), false);
                             if (isBase64Encoded(link)) {
                                 try {
                                     Process b64dec = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c", "base64 -d " + patchOutput + " > " + patchOutput.replaceAll(base64, "")});
@@ -96,6 +92,7 @@ public class Downloader {
                                         //Do nothing
                                     }
                                     if (b64dec.exitValue() != 0) {
+                                        System.out.println("Failed to decode patch - " + patch);
                                         System.exit(1);
                                     }
                                 } catch (IOException e) {
@@ -104,11 +101,14 @@ public class Downloader {
                             }
                             System.out.println("\t\tDownloaded " + link.getURL());
                             linkC++;
+                        } else {
+                            System.out.println("NOT A PATCH - " + link);
                         }
                     }
                 }
             }
         }
+        System.out.println("Success!");
     }
 
     private static String getPatchURL(Link link) {
@@ -117,7 +117,7 @@ public class Downloader {
             return url + ".patch";
         } else if (url.contains("git.kernel.org")) {
             return url.replaceAll("cgit/", "pub/scm/").replaceAll("commit", "patch");
-        } else if (url.contains("source.codeaurora.org") || url.contains("www.codeaurora.org")) {
+        } else if (url.contains("codeaurora.org")) {
             return url.replaceAll("commit", "patch");
         } else if (url.contains("android.googlesource.com")) {
             String add = "";
@@ -134,12 +134,22 @@ public class Downloader {
             String id = url.split("/")[idS];
             //TODO: Dynamically get revision
             return "https://review.lineageos.org/changes/" + id + "/revisions/1/patch?download"; //BASE64 ENCODED
+        } else if (url.contains("android-review.googlesource.com") && !url.contains("topic") && !url.contains("#/q")) {
+            int idS = 3;
+            if (url.contains("#/c")) {
+                idS = 5;
+            }
+            String id = url.split("/")[idS];
+            //TODO: Dynamically get revision
+            return "https://android-review.googlesource.com/changes/" + id + "/revisions/1/patch?download"; //BASE64 ENCODED
+        } else if(url.contains("patchwork")) {
+            return url + "/raw";
         }
         return "NOT A PATCH";
     }
 
     private static boolean isBase64Encoded(Link link) {
-        if (link.getURL().contains("android.googlesource.com") || link.getURL().contains("review.lineageos.org")) {
+        if (link.getURL().contains("android.googlesource.com") || link.getURL().contains("review.lineageos.org") || link.getURL().contains("android-review.googlesource.com")) {
             return true;
         }
         return false;
@@ -161,9 +171,15 @@ public class Downloader {
             }
             connection.disconnect();
         } catch (Exception e) {
-            System.out.println("Throttling? Too many files open?");
+            //System.out.println("Throttling? Too many files open?");
             e.printStackTrace();
-            System.exit(1);
+            try {
+                Thread.sleep(30000L);
+                downloadFile(url, out, useCache);
+            } catch(Exception e1) {
+                e1.printStackTrace();
+            }
+            //System.exit(1);
         }
     }
 

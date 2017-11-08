@@ -33,6 +33,9 @@ public class Patcher {
         ArrayList<String> scriptCommands = new ArrayList<String>();
 
         KernelVersion kernelVersion = getKernelVersion(kernelPath);
+        boolean prima = new File(base + kernelPath + "/drivers/staging/prima/").exists();
+        boolean qcacld2 = new File(base + kernelPath + "/drivers/staging/qcacld-2.0/").exists();
+        boolean qcacld3 = new File(base + kernelPath + "/drivers/staging/qcacld-3.0/").exists();
 
         File[] cves = new File(patches).listFiles(File::isDirectory);
         if (cves != null && cves.length > 0) {
@@ -47,47 +50,70 @@ public class Patcher {
                     if(isVersionInRange(kernelVersion, patchVersion)) {
                         versions.add(patchVersion);
                     }
+                    if((prima && patchVersion.equals("prima")) || (qcacld2 && patchVersion.equals("qcacld-2.0")) || (qcacld3 && patchVersion.equals("qcacld-3.0"))) {
+                        versions.add(patchVersion);
+                    }
+                }
+                boolean depends = new File(cve.toString() + "/depends").exists();
+                if(depends) {
+                    System.out.println("\tTHIS IS A DEPENDENT PATCHSET");
                 }
                 for (String version : versions) {
-                    File[] cveSubs = new File(cve.getAbsolutePath() + "/" + version + "/").listFiles(File::isFile);
-                    if (cveSubs != null && cveSubs.length > 0) {
-                        Arrays.sort(cveSubs);
-                        Runtime rt = Runtime.getRuntime();
+                    File[] cvePatches = new File(cve.getAbsolutePath() + "/" + version + "/").listFiles(File::isFile);
+                    if (cvePatches != null && cvePatches.length > 0) {
+                        Arrays.sort(cvePatches);
                         int exitCounter = 0;
+                        String patchSet = "";
                         ArrayList<String> commands = new ArrayList<String>();
-                        for (File cveSub : cveSubs) {
-                            if (!cveSub.toString().contains(".base64") && !cveSub.toString().contains(".disabled") && !cveSub.toString().contains(".dupe")) {
-                                try {
-                                    String command = "git -C " + kernel + " apply --check " + cveSub.toString();
-                                    commands.add(command.replaceAll(" --check", ""));
-                                    System.out.println("\tTesting patch: " + command);
-                                    Process git = rt.exec(command);
-                                    while (git.isAlive()) {
-                                        //Do nothing
-                                    }
-                                    if(command.contains("--3way")) {
-                                        Scanner gitOut = new Scanner(git.getErrorStream());
-                                        while (gitOut.hasNextLine()) {//3way check conflicts exit with 0
-                                            String line = gitOut.nextLine();
-                                            if (line.contains("with conflicts")) {
-                                                exitCounter += 1;
-                                                //System.out.println("CONFLICT DETECTED!");
-                                            }
+                        for(File cvePatch : cvePatches) {
+                            if (!cvePatch.toString().contains(".base64") && !cvePatch.toString().contains(".disabled") && !cvePatch.toString().contains(".dupe")) {
+                                if(depends) {
+                                    patchSet += " " + cvePatch.toString();
+                                } else {
+                                    try {
+                                        String command = "git -C " + kernel + " apply --check " + cvePatch.toString();
+                                        if (isWifiPatch(version)) {
+                                            command += " --directory=\"drivers/staging/" + version + "\"";
                                         }
-                                        gitOut.close();
+                                        System.out.println("\tTesting patchset: " + command);
+                                        Process git = Runtime.getRuntime().exec(command);
+                                        while (git.isAlive()) {
+                                            //Do nothing
+                                        }
+                                        if (git.exitValue() == 0) {
+                                            commands.add(command.replaceAll(" --check", ""));
+                                        } else {
+                                            System.out.println("\tPatch does not apply");
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
                                     }
-                                    exitCounter += git.exitValue();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
                                 }
                             }
                         }
-                        if (exitCounter == 0) {
-                            System.out.println("\tSuccessfully able to patch " + cveReal);
+
+                        if(depends && patchSet.length() > 0) {
+                            try {
+                                String command = "git -C " + kernel + " apply --check " + patchSet;
+                                commands.add(command.replaceAll(" --check", ""));
+                                if (isWifiPatch(version)) {
+                                    command += " --directory=\"drivers/staging/" + version + "\"";
+                                }
+                                System.out.println("\tTesting patchset: " + command);
+                                Process git = Runtime.getRuntime().exec(command);
+                                while (git.isAlive()) {
+                                    //Do nothing
+                                }
+                                exitCounter += git.exitValue();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        if(exitCounter == 0) {
                             for (String command : commands) {
                                 try {
                                     System.out.println("\tApplying patch: " + command);
-                                    Process git = rt.exec(command);
+                                    Process git = Runtime.getRuntime().exec(command);
                                     while (git.isAlive()) {
                                         //Do nothing
                                     }
@@ -95,6 +121,8 @@ public class Patcher {
                                         System.out.println("Potential duplicate patch detected!");
                                         System.out.println("Failed: " + command);
                                         System.exit(1);
+                                    } else {
+                                        System.out.println("\tSuccessfully able to apply patch");
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -103,7 +131,7 @@ public class Patcher {
                                 scriptCommands.add(commandScript);
                             }
                         } else {
-                            System.out.println("\tPatch(es) do(es) not apply cleanly");
+                                System.out.println("\tUnable to apply patches");
                         }
                     } else {
                         System.out.println("\tNo patches available");
@@ -138,6 +166,9 @@ public class Patcher {
         } else if(patch.startsWith("^")) {
             KernelVersion patchVersion = new KernelVersion(patch.replaceAll("\\^", ""));
             return kernel.isLesserVersion(patchVersion);
+        } else if(patch.endsWith("+")) {
+            KernelVersion patchVersion = new KernelVersion(patch.replaceAll("\\+", ""));
+            return kernel.isGreaterVersion(patchVersion);
         } else if(patch.contains("-^")) {
             String[] patchS = patch.split("-\\^");
             KernelVersion patchVersionLower = new KernelVersion(patchS[0]);
@@ -169,6 +200,10 @@ public class Patcher {
             e.printStackTrace();
         }
         return new KernelVersion(kernelVersion);
+    }
+
+    public static boolean isWifiPatch(String version) {
+        return version.equals("prima") || version.startsWith("qcacld");
     }
 
     public static class KernelVersion {
