@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class Patcher {
 
     private static String prefix = "android_kernel_";
-    private static String patches = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
+    private static String patchesDir = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
     private static String patchesScript = "\\$cvePatches/";
     private static String base = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
     private static String outputBase = "/mnt/Drive-1/Development/Other/Android_ROMs/Scripts/LineageOS-14.1/CVE_Patchers/";
@@ -37,7 +37,7 @@ public class Patcher {
         boolean qcacld2 = new File(base + kernelPath + "/drivers/staging/qcacld-2.0/").exists();
         boolean qcacld3 = new File(base + kernelPath + "/drivers/staging/qcacld-3.0/").exists();
 
-        File[] patchSets = new File(patches).listFiles(File::isDirectory);
+        File[] patchSets = new File(patchesDir).listFiles(File::isDirectory);
         if (patchSets != null && patchSets.length > 0) {
             Arrays.sort(patchSets);
             for (File patchSet : patchSets) {
@@ -65,8 +65,13 @@ public class Patcher {
                         int exitCounter = 0;
                         String patchSetFiles = "";
                         ArrayList<String> commands = new ArrayList<String>();
+                        boolean hasAppliedIncr = false;
                         for(File patch : patches) {
                             if (!patch.toString().contains(".base64") && !patch.toString().contains(".disabled") && !patch.toString().contains(".dupe") && !patch.toString().contains(".sh")) {
+                                boolean incr = false;
+                                if(patchSetReal.equals("00LinuxIncrementals")) {
+                                    incr = true;
+                                }
                                 if(depends) {
                                     patchSetFiles += " " + patch.toString();
                                 } else {
@@ -80,9 +85,28 @@ public class Patcher {
                                         while (git.isAlive()) {
                                             //Do nothing
                                         }
-                                        if (git.exitValue() == 0) {
-                                            commands.add(command.replaceAll(" --check", ""));
-                                            System.out.println("\tPatch applies successfully");
+                                        int errorCounter = 0;
+                                        if(incr) {
+                                            Scanner stderr = new Scanner(git.getErrorStream());
+                                            while(stderr.hasNextLine()) {
+                                                String error = stderr.nextLine();
+                                                if(error.startsWith("error: patch failed: Makefile") && !hasAppliedIncr) {
+                                                    errorCounter += 1000;
+                                                }
+                                                if(error.startsWith("error: patch failed")) {
+                                                    errorCounter += 1;
+                                                }
+                                            }
+                                            stderr.close();
+                                        }
+                                        if (git.exitValue() == (incr ? 1 : 0) && errorCounter <= 50) {
+                                            if(incr) {
+                                                hasAppliedIncr = true;
+                                                commands.add(command.replaceAll(" --check", " --reject"));
+                                            } else {
+                                                commands.add(command.replaceAll(" --check", ""));
+                                            }
+                                            System.out.println("\tPatch applies successfully*");
                                         } else {
                                             System.out.println("\tPatch does not apply");
                                         }
@@ -119,7 +143,7 @@ public class Patcher {
                                     while (git.isAlive()) {
                                         //Do nothing
                                     }
-                                    if (git.exitValue() != 0) {
+                                    if (git.exitValue() != 0 && !command.contains("00LinuxIncremental")) {
                                         System.out.println("Potential duplicate patch detected!");
                                         System.out.println("Failed: " + command);
                                         System.exit(1);
@@ -129,7 +153,7 @@ public class Patcher {
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
-                                String commandScript = command.replaceAll(" -C " + kernel, "").replaceAll(Patcher.patches, patchesScript);
+                                String commandScript = command.replaceAll(" -C " + kernel, "").replaceAll(patchesDir, patchesScript);
                                 scriptCommands.add(commandScript);
                             }
                         } else {
@@ -192,9 +216,6 @@ public class Patcher {
                 if (line.startsWith("PATCHLEVEL = ")) {
                     kernelVersion += "." + line.split("= ")[1];
                 }
-                if (line.startsWith("SUBLEVEL = ")) {
-                    kernelVersion += "." + line.split("= ")[1];
-                }
                 if (line.startsWith("NAME = ")) {
                     break;
                 }
@@ -216,16 +237,12 @@ public class Patcher {
         private String versionFull = "";
         private int version = 0;
         private int patchLevel = 0;
-        private int subLevel = 0;
 
         public KernelVersion(String version) {
             this.versionFull = version;
             String[] versionSplit = version.split("\\.");
             this.version = Integer.valueOf(versionSplit[0]);
             this.patchLevel = Integer.valueOf(versionSplit[1]);
-            if(versionSplit.length == 3) {
-                this.subLevel = Integer.valueOf(versionSplit[2]);
-            }
         }
 
         public KernelVersion(int version, int patchLevel) {
@@ -244,10 +261,6 @@ public class Patcher {
 
         public int getPatchLevel() {
             return patchLevel;
-        }
-
-        public int getSubLevel() {
-            return subLevel;
         }
 
         public boolean isGreaterVersion(KernelVersion comparedTo) {
