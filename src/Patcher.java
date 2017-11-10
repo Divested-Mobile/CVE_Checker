@@ -41,12 +41,12 @@ public class Patcher {
         if (patchSets != null && patchSets.length > 0) {
             Arrays.sort(patchSets);
             for (File patchSet : patchSets) {
-                String patchSetReal = patchSet.toString().split("/")[8];
+                String patchSetReal = patchSet.getName();
                 System.out.println("Checking " + patchSetReal);
                 File[] patchSetVersions =  new File(patchSet.getAbsolutePath()).listFiles(File::isDirectory);
                 ArrayList<String> versions = new ArrayList<String>();
                 for (File patchSetVersion : patchSetVersions) {
-                    String patchVersion = patchSetVersion.getAbsolutePath().split("/")[9];
+                    String patchVersion = patchSetVersion.getName();
                     if(isVersionInRange(kernelVersion, patchVersion)) {
                         versions.add(patchVersion);
                     }
@@ -66,10 +66,13 @@ public class Patcher {
                         String patchSetFiles = "";
                         ArrayList<String> commands = new ArrayList<String>();
                         boolean hasAppliedIncr = false;
+                        int lastIncr = 0;
                         for(File patch : patches) {
                             if (!patch.toString().contains(".base64") && !patch.toString().contains(".disabled") && !patch.toString().contains(".dupe") && !patch.toString().contains(".sh")) {
                                 boolean incr = false;
+                                int curIncr = 0;
                                 if(patchSetReal.equals("00LinuxIncrementals")) {
+                                    curIncr = Integer.valueOf(patch.getName().split("\\.")[2].split("-")[0]);
                                     incr = true;
                                 }
                                 if(depends) {
@@ -90,8 +93,11 @@ public class Patcher {
                                             Scanner stderr = new Scanner(git.getErrorStream());
                                             while(stderr.hasNextLine()) {
                                                 String error = stderr.nextLine();
-                                                if(error.startsWith("error: patch failed: Makefile") && !hasAppliedIncr) {
-                                                    errorCounter += 1000;
+                                                if(error.startsWith("error: patch failed: Makefile")) {
+                                                    boolean incrDeltaTooHigh = (curIncr - lastIncr) > 1;
+                                                    if(!hasAppliedIncr || incrDeltaTooHigh) {
+                                                        errorCounter += 1000;
+                                                    }
                                                 }
                                                 if(error.startsWith("error: patch failed")) {
                                                     errorCounter += 1;
@@ -99,16 +105,17 @@ public class Patcher {
                                             }
                                             stderr.close();
                                         }
-                                        if (git.exitValue() == (incr ? 1 : 0) && errorCounter <= 50) {
+                                        if (git.exitValue() <= (incr ? 1 : 0) && errorCounter <= (hasAppliedIncr ? 5 : 20)) {
                                             if(incr) {
                                                 hasAppliedIncr = true;
+                                                lastIncr = curIncr;
                                                 commands.add(command.replaceAll(" --check", " --reject"));
                                             } else {
                                                 commands.add(command.replaceAll(" --check", ""));
                                             }
-                                            System.out.println("\tPatch applies successfully*");
+                                            System.out.println("\t\tPatch applies successfully* " + errorCounter);
                                         } else {
-                                            System.out.println("\tPatch does not apply");
+                                            System.out.println("\t\tPatch does not apply " + errorCounter);
                                         }
                                     } catch (IOException e) {
                                         e.printStackTrace();
@@ -148,7 +155,7 @@ public class Patcher {
                                         System.out.println("Failed: " + command);
                                         System.exit(1);
                                     } else {
-                                        System.out.println("\tSuccessfully able to apply patch");
+                                        System.out.println("\t\tSuccessfully able to apply patch");
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -157,7 +164,7 @@ public class Patcher {
                                 scriptCommands.add(commandScript);
                             }
                         } else {
-                                System.out.println("\tUnable to apply patches");
+                                System.out.println("\t\tUnable to apply patches");
                         }
                     } else {
                         System.out.println("\tNo patches available");
@@ -267,20 +274,14 @@ public class Patcher {
             if(getVersion() > comparedTo.getVersion()) {
                 return true;
             }
-            if(getVersion() == comparedTo.getVersion() && getPatchLevel() >= comparedTo.getPatchLevel()) {
-                return true;
-            }
-            return false;
+            return getVersion() == comparedTo.getVersion() && getPatchLevel() >= comparedTo.getPatchLevel();
         }
 
         public boolean isLesserVersion(KernelVersion comparedTo) {
             if(getVersion() < comparedTo.getVersion()) {
                 return true;
             }
-            if(getVersion() == comparedTo.getVersion() && getPatchLevel() <= comparedTo.getPatchLevel()) {
-                return true;
-            }
-            return false;
+            return getVersion() == comparedTo.getVersion() && getPatchLevel() <= comparedTo.getPatchLevel();
         }
     }
 
