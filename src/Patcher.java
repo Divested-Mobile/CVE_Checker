@@ -37,16 +37,16 @@ public class Patcher {
         boolean qcacld2 = new File(base + kernelPath + "/drivers/staging/qcacld-2.0/").exists();
         boolean qcacld3 = new File(base + kernelPath + "/drivers/staging/qcacld-3.0/").exists();
 
-        File[] cves = new File(patches).listFiles(File::isDirectory);
-        if (cves != null && cves.length > 0) {
-            Arrays.sort(cves);
-            for (File cve : cves) {
-                String cveReal = cve.toString().split("/")[8];
-                System.out.println("Checking " + cveReal);
-                File[] cvePatchVersions =  new File(cve.getAbsolutePath()).listFiles(File::isDirectory);
+        File[] patchSets = new File(patches).listFiles(File::isDirectory);
+        if (patchSets != null && patchSets.length > 0) {
+            Arrays.sort(patchSets);
+            for (File patchSet : patchSets) {
+                String patchSetReal = patchSet.toString().split("/")[8];
+                System.out.println("Checking " + patchSetReal);
+                File[] patchSetVersions =  new File(patchSet.getAbsolutePath()).listFiles(File::isDirectory);
                 ArrayList<String> versions = new ArrayList<String>();
-                for (File cvePatchVersion : cvePatchVersions) {
-                    String patchVersion = cvePatchVersion.getAbsolutePath().split("/")[9];
+                for (File patchSetVersion : patchSetVersions) {
+                    String patchVersion = patchSetVersion.getAbsolutePath().split("/")[9];
                     if(isVersionInRange(kernelVersion, patchVersion)) {
                         versions.add(patchVersion);
                     }
@@ -54,24 +54,24 @@ public class Patcher {
                         versions.add(patchVersion);
                     }
                 }
-                boolean depends = new File(cve.toString() + "/depends").exists();
+                boolean depends = new File(patchSet.toString() + "/depends").exists();
                 if(depends) {
                     System.out.println("\tTHIS IS A DEPENDENT PATCHSET");
                 }
                 for (String version : versions) {
-                    File[] cvePatches = new File(cve.getAbsolutePath() + "/" + version + "/").listFiles(File::isFile);
-                    if (cvePatches != null && cvePatches.length > 0) {
-                        Arrays.sort(cvePatches);
+                    File[] patches = new File(patchSet.getAbsolutePath() + "/" + version + "/").listFiles(File::isFile);
+                    if (patches != null && patches.length > 0) {
+                        Arrays.sort(patches);
                         int exitCounter = 0;
-                        String patchSet = "";
+                        String patchSetFiles = "";
                         ArrayList<String> commands = new ArrayList<String>();
-                        for(File cvePatch : cvePatches) {
-                            if (!cvePatch.toString().contains(".base64") && !cvePatch.toString().contains(".disabled") && !cvePatch.toString().contains(".dupe") && !cvePatch.toString().contains(".sh")) {
+                        for(File patch : patches) {
+                            if (!patch.toString().contains(".base64") && !patch.toString().contains(".disabled") && !patch.toString().contains(".dupe") && !patch.toString().contains(".sh")) {
                                 if(depends) {
-                                    patchSet += " " + cvePatch.toString();
+                                    patchSetFiles += " " + patch.toString();
                                 } else {
                                     try {
-                                        String command = "git -C " + kernel + " apply --check " + cvePatch.toString();
+                                        String command = "git -C " + kernel + " apply --check " + patch.toString();
                                         if (isWifiPatch(version)) {
                                             command += " --directory=\"drivers/staging/" + version + "\"";
                                         }
@@ -93,9 +93,9 @@ public class Patcher {
                             }
                         }
 
-                        if(depends && patchSet.length() > 0) {
+                        if(depends && patchSetFiles.length() > 0) {
                             try {
-                                String command = "git -C " + kernel + " apply --check " + patchSet;
+                                String command = "git -C " + kernel + " apply --check " + patchSetFiles;
                                 //TODO: FIXME! PASSING MULTIPLE FILES DOESN'T APPLY EACH ONE AFTER THE OTHER BUT ONE AT A TIME SEPARATELY
                                 commands.add(command.replaceAll(" --check", ""));
                                 if (isWifiPatch(version)) {
@@ -129,7 +129,7 @@ public class Patcher {
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
-                                String commandScript = command.replaceAll(" -C " + kernel, "").replaceAll(patches, patchesScript);
+                                String commandScript = command.replaceAll(" -C " + kernel, "").replaceAll(Patcher.patches, patchesScript);
                                 scriptCommands.add(commandScript);
                             }
                         } else {
@@ -192,6 +192,9 @@ public class Patcher {
                 if (line.startsWith("PATCHLEVEL = ")) {
                     kernelVersion += "." + line.split("= ")[1];
                 }
+                if (line.startsWith("SUBLEVEL = ")) {
+                    kernelVersion += "." + line.split("= ")[1];
+                }
                 if (line.startsWith("NAME = ")) {
                     break;
                 }
@@ -213,12 +216,16 @@ public class Patcher {
         private String versionFull = "";
         private int version = 0;
         private int patchLevel = 0;
+        private int subLevel = 0;
 
         public KernelVersion(String version) {
             this.versionFull = version;
             String[] versionSplit = version.split("\\.");
             this.version = Integer.valueOf(versionSplit[0]);
             this.patchLevel = Integer.valueOf(versionSplit[1]);
+            if(versionSplit.length == 3) {
+                this.subLevel = Integer.valueOf(versionSplit[2]);
+            }
         }
 
         public KernelVersion(int version, int patchLevel) {
@@ -237,6 +244,10 @@ public class Patcher {
 
         public int getPatchLevel() {
             return patchLevel;
+        }
+
+        public int getSubLevel() {
+            return subLevel;
         }
 
         public boolean isGreaterVersion(KernelVersion comparedTo) {
