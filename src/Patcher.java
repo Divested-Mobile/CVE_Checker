@@ -66,7 +66,7 @@ public class Patcher {
                         String patchSet = "";
                         ArrayList<String> commands = new ArrayList<String>();
                         for(File cvePatch : cvePatches) {
-                            if (!cvePatch.toString().contains(".base64") && !cvePatch.toString().contains(".disabled") && !cvePatch.toString().contains(".dupe")) {
+                            if (!cvePatch.toString().contains(".base64") && !cvePatch.toString().contains(".disabled") && !cvePatch.toString().contains(".dupe") && !cvePatch.toString().contains(".sh")) {
                                 if(depends) {
                                     patchSet += " " + cvePatch.toString();
                                 } else {
@@ -82,6 +82,7 @@ public class Patcher {
                                         }
                                         if (git.exitValue() == 0) {
                                             commands.add(command.replaceAll(" --check", ""));
+                                            System.out.println("\tPatch applies successfully");
                                         } else {
                                             System.out.println("\tPatch does not apply");
                                         }
@@ -95,6 +96,7 @@ public class Patcher {
                         if(depends && patchSet.length() > 0) {
                             try {
                                 String command = "git -C " + kernel + " apply --check " + patchSet;
+                                //TODO: FIXME! PASSING MULTIPLE FILES DOESN'T APPLY EACH ONE AFTER THE OTHER BUT ONE AT A TIME SEPARATELY
                                 commands.add(command.replaceAll(" --check", ""));
                                 if (isWifiPatch(version)) {
                                     command += " --directory=\"drivers/staging/" + version + "\"";
