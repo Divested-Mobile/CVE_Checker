@@ -65,16 +65,8 @@ public class Patcher {
                         int exitCounter = 0;
                         String patchSetFiles = "";
                         ArrayList<String> commands = new ArrayList<String>();
-                        boolean hasAppliedIncr = false;
-                        int lastIncr = 0;
                         for(File patch : patches) {
                             if (!patch.toString().contains(".base64") && !patch.toString().contains(".disabled") && !patch.toString().contains(".dupe") && !patch.toString().contains(".sh")) {
-                                boolean incr = false;
-                                int curIncr = 0;
-                                if(patchSetReal.equals("00LinuxIncrementals")) {
-                                    curIncr = Integer.valueOf(patch.getName().split("\\.")[2].split("-")[0]);
-                                    incr = true;
-                                }
                                 if(depends) {
                                     patchSetFiles += " " + patch.toString();
                                 } else {
@@ -88,34 +80,11 @@ public class Patcher {
                                         while (git.isAlive()) {
                                             //Do nothing
                                         }
-                                        int errorCounter = 0;
-                                        if(incr) {
-                                            Scanner stderr = new Scanner(git.getErrorStream());
-                                            while(stderr.hasNextLine()) {
-                                                String error = stderr.nextLine();
-                                                if(error.startsWith("error: patch failed: Makefile")) {
-                                                    boolean incrDeltaTooHigh = (curIncr - lastIncr) > 1;
-                                                    if(!hasAppliedIncr || incrDeltaTooHigh) {
-                                                        errorCounter += 1000;
-                                                    }
-                                                }
-                                                if(error.startsWith("error: patch failed")) {
-                                                    errorCounter += 1;
-                                                }
-                                            }
-                                            stderr.close();
-                                        }
-                                        if (git.exitValue() <= (incr ? 1 : 0) && errorCounter <= (hasAppliedIncr ? 5 : 20)) {
-                                            if(incr) {
-                                                hasAppliedIncr = true;
-                                                lastIncr = curIncr;
-                                                commands.add(command.replaceAll(" --check", " --reject"));
-                                            } else {
-                                                commands.add(command.replaceAll(" --check", ""));
-                                            }
-                                            System.out.println("\t\tPatch applies successfully* " + errorCounter);
+                                        if (git.exitValue() == 0) {
+                                            commands.add(command.replaceAll(" --check", ""));
+                                            System.out.println("\t\tPatch applies successfully");
                                         } else {
-                                            System.out.println("\t\tPatch does not apply " + errorCounter);
+                                            System.out.println("\t\tPatch does not apply");
                                         }
                                     } catch (IOException e) {
                                         e.printStackTrace();
