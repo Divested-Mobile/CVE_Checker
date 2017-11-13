@@ -66,7 +66,7 @@ public class Patcher {
                         String patchSetFiles = "";
                         ArrayList<String> commands = new ArrayList<String>();
                         for(File patch : patches) {
-                            if (!patch.toString().contains(".base64") && !patch.toString().contains(".disabled") && !patch.toString().contains(".dupe") && !patch.toString().contains(".sh")) {
+                            if (!patch.getName().contains(".base64") && !patch.getName().contains(".disabled") && !patch.getName().contains(".dupe") && !patch.getName().contains(".sh")) {
                                 if(depends) {
                                     patchSetFiles += " " + patch.toString();
                                 } else {
