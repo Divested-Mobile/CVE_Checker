@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class Patcher {
 
     private static String prefix = "android_kernel_";
-    private static String patchesDir = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
+    private static String patchesDir = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/";
     private static String patchesScript = "\\$cvePatches/";
     private static String base = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
     private static String outputBase = "/mnt/Drive-1/Development/Other/Android_ROMs/Scripts/LineageOS-14.1/CVE_Patchers/";
@@ -72,19 +72,22 @@ public class Patcher {
                                 } else {
                                     try {
                                         String command = "git -C " + kernel + " apply --check " + patch.toString();
-                                        if (isWifiPatch(version)) {
-                                            command += " --directory=\"drivers/staging/" + version + "\"";
-                                        }
-                                        System.out.println("\tTesting patchset: " + command);
-                                        Process git = Runtime.getRuntime().exec(command);
-                                        while (git.isAlive()) {
-                                            //Do nothing
-                                        }
-                                        if (git.exitValue() == 0) {
-                                            commands.add(command.replaceAll(" --check", ""));
-                                            System.out.println("\t\tPatch applies successfully");
-                                        } else {
-                                            System.out.println("\t\tPatch does not apply");
+                                        for (int x = 0; x < (isWifiPatch(version) ? 2 : 1); x++) {
+                                            if (x == 1 && isWifiPatch(version)) {
+                                                System.out.println("\t\tWIFI PATCH, RUNNING OUT OF DIR!");
+                                                command += " --directory=\"drivers/staging/" + version + "\"";
+                                            }
+                                            System.out.println("\tTesting patchset: " + command);
+                                            Process git = Runtime.getRuntime().exec(command);
+                                            while (git.isAlive()) {
+                                                //Do nothing
+                                            }
+                                            if (git.exitValue() == 0) {
+                                                commands.add(command.replaceAll(" --check", ""));
+                                                System.out.println("\t\tPatch applies successfully");
+                                            } else {
+                                                System.out.println("\t\tPatch does not apply");
+                                            }
                                         }
                                     } catch (IOException e) {
                                         e.printStackTrace();

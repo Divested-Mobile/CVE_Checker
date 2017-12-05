@@ -9,8 +9,8 @@ import java.util.Scanner;
 
 public class Downloader {
 
-    private static String cveJson = "/home/***REMOVED***/Development/Other/Android_ROMs/Patches/Linux_CVEs/Kernel_CVE_Patch_List.txt";
-    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux_CVEs/";
+    private static String cveJson = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/Kernel_CVE_Patch_List.txt";
+    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/";
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
     private static final String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36";
 
@@ -71,6 +71,12 @@ public class Downloader {
                     if(cve.getDepends()) {
                         File depends = new File(output + cve.getId() + "/depends");
                         depends.mkdirs();
+                        File dependsAdd = new File(output + cve.getId() + "/depends/.NotEmpty");
+                        try {
+                            dependsAdd.createNewFile();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                     //Iterate over all links and download if needed
                     int linkC = 1;
@@ -143,7 +149,7 @@ public class Downloader {
             //TODO: Dynamically get revision
             return "https://android-review.googlesource.com/changes/" + id + "/revisions/1/patch?download"; //BASE64 ENCODED
         } else if(url.contains("patchwork")) {
-            return url + "/raw";
+            return (url + "/raw").replaceAll("//raw", "/raw");
         }
         return "NOT A PATCH";
     }
