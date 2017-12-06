@@ -26,7 +26,7 @@ public class Downloader {
                 String line = cve.nextLine();
                 if(line.startsWith("#")) {
                     //Comment, ignore
-                } else if (line.startsWith("CVE") || line.startsWith("LVT") || !cve.hasNextLine()) {
+                } else if (line.startsWith("CVE") || line.startsWith("LVT") || line.startsWith("00") || !cve.hasNextLine()) {
                     if (name.length() > 0) {
                         cves.add(new CVE(name, depends, links));
                         System.out.println("\t\tAdded " + links.size() + " links");

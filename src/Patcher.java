@@ -74,7 +74,7 @@ public class Patcher {
                                         String command = "git -C " + kernel + " apply --check " + patch.toString();
                                         for (int x = 0; x < (isWifiPatch(version) ? 2 : 1); x++) {
                                             if (x == 1 && isWifiPatch(version)) {
-                                                System.out.println("\t\tWIFI PATCH, RUNNING OUT OF DIR!");
+                                                System.out.println("\t\tWIFI PATCH, RUNNING AGAIN OUT OF DIR!");
                                                 command += " --directory=\"drivers/staging/" + version + "\"";
                                             }
                                             System.out.println("\tTesting patchset: " + command);
@@ -83,8 +83,28 @@ public class Patcher {
                                                 //Do nothing
                                             }
                                             if (git.exitValue() == 0) {
-                                                commands.add(command.replaceAll(" --check", ""));
+                                                command = command.replaceAll(" --check", "");
+                                                commands.add(command);
                                                 System.out.println("\t\tPatch applies successfully");
+
+                                                try {
+                                                    System.out.println("\tApplying patch: " + command);
+                                                    git = Runtime.getRuntime().exec(command);
+                                                    while (git.isAlive()) {
+                                                        //Do nothing
+                                                    }
+                                                    if (git.exitValue() != 0 && !command.contains("0001-LinuxIncrementals")) {
+                                                        System.out.println("Potential duplicate patch detected!");
+                                                        System.out.println("Failed: " + command);
+                                                        System.exit(1);
+                                                    } else {
+                                                        System.out.println("\t\tSuccessfully able to apply patch");
+                                                    }
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                String commandScript = command.replaceAll(" -C " + kernel, "").replaceAll(patchesDir, patchesScript);
+                                                scriptCommands.add(commandScript);
                                             } else {
                                                 System.out.println("\t\tPatch does not apply");
                                             }
@@ -98,23 +118,26 @@ public class Patcher {
 
                         if(depends && patchSetFiles.length() > 0) {
                             try {
-                                String command = "git -C " + kernel + " apply --check " + patchSetFiles;
-                                //TODO: FIXME! PASSING MULTIPLE FILES DOESN'T APPLY EACH ONE AFTER THE OTHER BUT ONE AT A TIME SEPARATELY
-                                commands.add(command.replaceAll(" --check", ""));
-                                if (isWifiPatch(version)) {
-                                    command += " --directory=\"drivers/staging/" + version + "\"";
+                                for (int x = 0; x < (isWifiPatch(version) ? 2 : 1); x++) {
+                                    String command = "git -C " + kernel + " apply --check " + patchSetFiles;
+                                    //TODO: FIXME! PASSING MULTIPLE FILES DOESN'T APPLY EACH ONE AFTER THE OTHER BUT ONE AT A TIME SEPARATELY
+                                    commands.add(command.replaceAll(" --check", ""));
+                                    if (x == 1 && isWifiPatch(version)) {
+                                        System.out.println("\t\tWIFI PATCH, RUNNING AGAIN OUT OF DIR!");
+                                        command += " --directory=\"drivers/staging/" + version + "\"";
+                                    }
+                                    System.out.println("\tTesting patchset: " + command);
+                                    Process git = Runtime.getRuntime().exec(command);
+                                    while (git.isAlive()) {
+                                        //Do nothing
+                                    }
+                                    exitCounter += git.exitValue();
                                 }
-                                System.out.println("\tTesting patchset: " + command);
-                                Process git = Runtime.getRuntime().exec(command);
-                                while (git.isAlive()) {
-                                    //Do nothing
-                                }
-                                exitCounter += git.exitValue();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                         }
-                        if(exitCounter == 0) {
+                        if(exitCounter == 0 && depends) {
                             for (String command : commands) {
                                 try {
                                     System.out.println("\tApplying patch: " + command);
@@ -122,7 +145,7 @@ public class Patcher {
                                     while (git.isAlive()) {
                                         //Do nothing
                                     }
-                                    if (git.exitValue() != 0 && !command.contains("00LinuxIncremental")) {
+                                    if (git.exitValue() != 0 && !command.contains("0001-LinuxIncrementals")) {
                                         System.out.println("Potential duplicate patch detected!");
                                         System.out.println("Failed: " + command);
                                         System.exit(1);
