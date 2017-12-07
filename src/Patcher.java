@@ -7,11 +7,11 @@ import java.util.Scanner;
 
 public class Patcher {
 
-    private static String androidWorkspace = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
-    private static String patchesPath = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/";
-    private static String patchesPathScript = "\\$cvePatches/";
-    private static String scriptPrefix = "android_kernel_";
-    private static String scriptOutput = "/mnt/Drive-1/Development/Other/Android_ROMs/Scripts/LineageOS-14.1/CVE_Patchers/";
+    private static final String androidWorkspace = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
+    private static final String patchesPath = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/";
+    private static final String patchesPathScript = "\\$cvePatches/";
+    private static final String scriptPrefix = "android_kernel_";
+    private static final String scriptOutput = "/mnt/Drive-1/Development/Other/Android_ROMs/Scripts/LineageOS-14.1/CVE_Patchers/";
 
 
     public static void main(String[] args) {
@@ -45,7 +45,7 @@ public class Patcher {
             boolean qcacld2 = new File(kernelPath + "/drivers/staging/qcacld-2.0/").exists();
             boolean qcacld3 = new File(kernelPath + "/drivers/staging/qcacld-3.0/").exists();
 
-            ArrayList<String> scriptCommands = new ArrayList<String>();
+            ArrayList<String> scriptCommands = new ArrayList<>();
 
             //The top-level directory contains all patchsets
             File[] patchSets = new File(patchesPath).listFiles(File::isDirectory);
@@ -59,7 +59,7 @@ public class Patcher {
 
                     //Get all available versions for a patchset
                     File[] patchSetVersions = patchSet.listFiles(File::isDirectory);
-                    ArrayList<String> versions = new ArrayList<String>();
+                    ArrayList<String> versions = new ArrayList<>();
                     //Check which versions are applicable
                     for (File patchSetVersion : patchSetVersions) {
                         String patchVersion = patchSetVersion.getName();
@@ -174,7 +174,7 @@ public class Patcher {
 
     private static ArrayList<String> doesPatchSetApply(String kernelPath, File[] patchset, boolean applyPatches) {
         System.out.println("Checking dependent patchset");
-        ArrayList<String> commands = new ArrayList<String>();
+        ArrayList<String> commands = new ArrayList<>();
         for (File patch : patchset) {
             if (isValidPatchName(patch.getName())) {
                 String command = doesPatchApply(kernelPath, patch.getAbsolutePath(), applyPatches, "");
@@ -188,7 +188,7 @@ public class Patcher {
         return commands;
     }
 
-    public static KernelVersion getKernelVersion(String kernelPath) {
+    private static KernelVersion getKernelVersion(String kernelPath) {
         String kernelVersion = "";
         try {
             Scanner kernelMakefile = new Scanner(new File(kernelPath + "/Makefile"));
@@ -212,7 +212,7 @@ public class Patcher {
         return new KernelVersion(kernelVersion);
     }
 
-    public static boolean isVersionInRange(KernelVersion kernel, String patch) {
+    private static boolean isVersionInRange(KernelVersion kernel, String patch) {
         if (patch.equals("ANY")) {
             return true;
         } else if (kernel.getVersionFull().equals(patch)) {
@@ -232,7 +232,7 @@ public class Patcher {
         return false;
     }
 
-    public static boolean isWifiPatch(String patch) {
+    private static boolean isWifiPatch(String patch) {
         return patch.contains("/prima/") || patch.contains("/qcacld-");
     }
 
