@@ -1,5 +1,8 @@
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Scanner;
 
 public class Sorter {
 
@@ -39,9 +42,9 @@ public class Sorter {
                 return c1d.compareTo(c2d);
             }
         });
-        for(CVE cve : cves) {
+        for (CVE cve : cves) {
             System.out.println(cve.getId());
-            for(String line : cve.getLines()) {
+            for (String line : cve.getLines()) {
                 System.out.println(line);
             }
         }

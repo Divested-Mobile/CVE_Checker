@@ -15,14 +15,14 @@ public class Patcher {
 
 
     public static void main(String[] args) {
-        if(args.length > 0) {
-            for(String kernel : args) {
+        if (args.length > 0) {
+            for (String kernel : args) {
                 checkAndGenerateScript(kernel);
             }
         } else {
             System.out.println("No kernels passed, accepting input from stdin");
             Scanner s = new Scanner(System.in);
-            while(s.hasNextLine()) {
+            while (s.hasNextLine()) {
                 checkAndGenerateScript(s.nextLine());
             }
         }
@@ -38,7 +38,7 @@ public class Patcher {
 
     private static void checkAndGenerateScript(String kernel) {
         String kernelPath = getKernelPath(kernel);
-        if(doesKernelExist(new File(kernelPath))) {
+        if (doesKernelExist(new File(kernelPath))) {
             System.out.println("Starting on " + kernel);
             KernelVersion kernelVersion = getKernelVersion(kernelPath);
             boolean prima = new File(kernelPath + "/drivers/staging/prima/").exists();
@@ -49,11 +49,11 @@ public class Patcher {
 
             //The top-level directory contains all patchsets
             File[] patchSets = new File(patchesPath).listFiles(File::isDirectory);
-            if(patchSets != null && patchSets.length > 0) {
+            if (patchSets != null && patchSets.length > 0) {
                 Arrays.sort(patchSets);
 
                 //Iterate over all patchsets
-                for(File patchSet : patchSets) {
+                for (File patchSet : patchSets) {
                     String patchSetName = patchSet.getName();
                     System.out.println("\tChecking " + patchSetName);
 
@@ -80,14 +80,14 @@ public class Patcher {
                             Arrays.sort(patches);
 
                             //Check the patches
-                            if(depends) {
+                            if (depends) {
                                 ArrayList<String> commands = doesPatchSetApply(kernelPath, patches, true);
-                                if(commands != null) {
+                                if (commands != null) {
                                     scriptCommands.addAll(commands);
                                 }
                             } else {
-                                for(File patch : patches) {
-                                    if(isValidPatchName(patch.getName())) {
+                                for (File patch : patches) {
+                                    if (isValidPatchName(patch.getName())) {
                                         String command = doesPatchApply(kernelPath, patch.getAbsolutePath(), true, "");
                                         if (command != null) {
                                             scriptCommands.add(command);
@@ -139,18 +139,18 @@ public class Patcher {
             while (gitCheck.isAlive()) {
                 //Do nothing
             }
-            if(gitCheck.exitValue() == 0) {
+            if (gitCheck.exitValue() == 0) {
                 command = command.replaceAll(" --check", "");
-                if(alternateRoot.length() > 0) {
+                if (alternateRoot.length() > 0) {
                     command += " --directory=\"" + alternateRoot + "\"";
                 }
                 System.out.println("\t\tPatch can apply successfully: " + logPretty(command, kernelPath));
-                if(applyPatch) {
+                if (applyPatch) {
                     Process gitApply = Runtime.getRuntime().exec(command);
                     while (gitApply.isAlive()) {
                         //Do nothing
                     }
-                    if(gitApply.exitValue() == 0) {
+                    if (gitApply.exitValue() == 0) {
                         System.out.println("\t\t\tPatch applied successfully: " + logPretty(command, kernelPath));
                     } else {
                         System.out.println("\t\t\tPatched failed to apply after being checked! " + logPretty(command, kernelPath));
@@ -160,13 +160,13 @@ public class Patcher {
                 return command.replaceAll(" -C " + kernelPath, "").replaceAll(patchesPath, patchesPathScript);
             } else {
                 System.out.println("\t\tPatch does not apply successfully: " + logPretty(command, kernelPath));
-                if(isWifiPatch(patch)) {
+                if (isWifiPatch(patch)) {
                     System.out.println("\t\t\tThis is a Wi-Fi patch, it might need to be applied directly! Currently unsupported");
                     //TODO: GET THE VERSION
                     //return doesPatchApply(kernelPath, patch, applyPatch, "drivers/staging/" + version);
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -175,8 +175,8 @@ public class Patcher {
     private static ArrayList<String> doesPatchSetApply(String kernelPath, File[] patchset, boolean applyPatches) {
         System.out.println("Checking dependent patchset");
         ArrayList<String> commands = new ArrayList<String>();
-        for(File patch : patchset) {
-            if(isValidPatchName(patch.getName())) {
+        for (File patch : patchset) {
+            if (isValidPatchName(patch.getName())) {
                 String command = doesPatchApply(kernelPath, patch.getAbsolutePath(), applyPatches, "");
                 if (command != null) {
                     commands.add(command);
@@ -213,17 +213,17 @@ public class Patcher {
     }
 
     public static boolean isVersionInRange(KernelVersion kernel, String patch) {
-        if(patch.equals("ANY")) {
+        if (patch.equals("ANY")) {
             return true;
         } else if (kernel.getVersionFull().equals(patch)) {
             return true;
-        } else if(patch.startsWith("^")) {
+        } else if (patch.startsWith("^")) {
             KernelVersion patchVersion = new KernelVersion(patch.replaceAll("\\^", ""));
             return kernel.isLesserVersion(patchVersion);
-        } else if(patch.endsWith("+")) {
+        } else if (patch.endsWith("+")) {
             KernelVersion patchVersion = new KernelVersion(patch.replaceAll("\\+", ""));
             return kernel.isGreaterVersion(patchVersion);
-        } else if(patch.contains("-^")) {
+        } else if (patch.contains("-^")) {
             String[] patchS = patch.split("-\\^");
             KernelVersion patchVersionLower = new KernelVersion(patchS[0]);
             KernelVersion patchVersionHigher = new KernelVersion(patchS[1]);

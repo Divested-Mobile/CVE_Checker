@@ -8,7 +8,7 @@ public class LinuxIncrs {
     private static final int mostRecentVersion = 101;
 
     public static void main(String[] args) {
-        for(int x = 10; x < mostRecentVersion; x++) {
+        for (int x = 10; x < mostRecentVersion; x++) {
             String incr = x + "-" + (x + 1);
             String incrPad = String.format("%04d", x) + "-" + String.format("%04d", (x + 1));
             System.out.println("wget " + url + "patch-" + patchLevel + incr + compression + " -O - | xz -d > " + patchLevel + incrPad + ".patch");

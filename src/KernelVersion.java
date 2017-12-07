@@ -30,14 +30,14 @@ public class KernelVersion {
     }
 
     public boolean isGreaterVersion(KernelVersion comparedTo) {
-        if(getVersion() > comparedTo.getVersion()) {
+        if (getVersion() > comparedTo.getVersion()) {
             return true;
         }
         return getVersion() == comparedTo.getVersion() && getPatchLevel() >= comparedTo.getPatchLevel();
     }
 
     public boolean isLesserVersion(KernelVersion comparedTo) {
-        if(getVersion() < comparedTo.getVersion()) {
+        if (getVersion() < comparedTo.getVersion()) {
             return true;
         }
         return getVersion() == comparedTo.getVersion() && getPatchLevel() <= comparedTo.getPatchLevel();

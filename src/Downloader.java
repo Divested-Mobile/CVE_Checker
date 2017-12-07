@@ -24,7 +24,7 @@ public class Downloader {
             ArrayList<Link> links = new ArrayList<Link>();
             while (cve.hasNextLine()) {
                 String line = cve.nextLine();
-                if(line.startsWith("#")) {
+                if (line.startsWith("#")) {
                     //Comment, ignore
                 } else if (line.startsWith("CVE") || line.startsWith("LVT") || line.startsWith("00") || !cve.hasNextLine()) {
                     if (name.length() > 0) {
@@ -38,13 +38,13 @@ public class Downloader {
                         name = line;
                         System.out.println("\t" + name);
                     }
-                } else if(line.contains("Depends")) {
+                } else if (line.contains("Depends")) {
                     depends = true;
-                } else if(line.contains("Link - ")) {
+                } else if (line.contains("Link - ")) {
                     String[] lineS = line.split(" - ");
                     String link = "";
                     String version = "";
-                    if(lineS.length > 2) {
+                    if (lineS.length > 2) {
                         version = lineS[1];
                         link = lineS[2];
                     } else {
@@ -64,11 +64,11 @@ public class Downloader {
         System.out.println("Downloading patches...");
         boolean skipIfExists = true;
         for (CVE cve : cves) {
-            if(!(skipIfExists && new File(output + cve.getId()).exists())) {
+            if (!(skipIfExists && new File(output + cve.getId()).exists())) {
                 System.out.println("\t" + cve.getId());
                 //Only run if we have patches available
                 if (cve.getLinks().size() > 0) {
-                    if(cve.getDepends()) {
+                    if (cve.getDepends()) {
                         File depends = new File(output + cve.getId() + "/depends");
                         depends.mkdirs();
                         File dependsAdd = new File(output + cve.getId() + "/depends/.NotEmpty");
@@ -148,7 +148,7 @@ public class Downloader {
             String id = url.split("/")[idS];
             //TODO: Dynamically get revision
             return "https://android-review.googlesource.com/changes/" + id + "/revisions/1/patch?download"; //BASE64 ENCODED
-        } else if(url.contains("patchwork")) {
+        } else if (url.contains("patchwork")) {
             return (url + "/raw").replaceAll("//raw", "/raw");
         }
         return "NOT A PATCH";
@@ -182,7 +182,7 @@ public class Downloader {
             try {
                 Thread.sleep(30000L);
                 downloadFile(url, out, useCache);
-            } catch(Exception e1) {
+            } catch (Exception e1) {
                 e1.printStackTrace();
             }
             //System.exit(1);
@@ -212,6 +212,7 @@ public class Downloader {
             return links;
         }
     }
+
 
     public static class Link {
         private String url;
