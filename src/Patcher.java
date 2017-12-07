@@ -1,6 +1,5 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,182 +7,209 @@ import java.util.Scanner;
 
 public class Patcher {
 
-    private static String prefix = "android_kernel_";
-    private static String patchesDir = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/";
-    private static String patchesScript = "\\$cvePatches/";
-    private static String base = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
-    private static String outputBase = "/mnt/Drive-1/Development/Other/Android_ROMs/Scripts/LineageOS-14.1/CVE_Patchers/";
+    private static String androidWorkspace = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
+    private static String patchesPath = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/";
+    private static String patchesPathScript = "\\$cvePatches/";
+    private static String scriptPrefix = "android_kernel_";
+    private static String scriptOutput = "/mnt/Drive-1/Development/Other/Android_ROMs/Scripts/LineageOS-14.1/CVE_Patchers/";
+
 
     public static void main(String[] args) {
-        Scanner s = new Scanner(System.in);
-        while (s.hasNextLine()) {
-            String kernelName = prefix + s.nextLine();
-            String kernelPath = kernelName.replaceAll("android_", "").replaceAll("_", "/");
-            String kernel = base + kernelPath;
-            if (new File(kernel).exists()) {
-                genScript(kernelName, kernelPath, kernel);
-            } else {
-                System.out.println("Kernel does not exist");
+        if(args.length > 0) {
+            for(String kernel : args) {
+                checkAndGenerateScript(kernel);
+            }
+        } else {
+            System.out.println("No kernels passed, accepting input from stdin");
+            Scanner s = new Scanner(System.in);
+            while(s.hasNextLine()) {
+                checkAndGenerateScript(s.nextLine());
             }
         }
     }
 
-    public static void genScript(String kernelName, String kernelPath, String kernel) {
-        String output = outputBase + kernelName + ".sh";
-        ArrayList<String> scriptCommands = new ArrayList<String>();
+    private static String getKernelPath(String kernel) {
+        return androidWorkspace + "kernel/" + kernel.replaceAll("_", "/");
+    }
 
-        KernelVersion kernelVersion = getKernelVersion(kernelPath);
-        boolean prima = new File(base + kernelPath + "/drivers/staging/prima/").exists();
-        boolean qcacld2 = new File(base + kernelPath + "/drivers/staging/qcacld-2.0/").exists();
-        boolean qcacld3 = new File(base + kernelPath + "/drivers/staging/qcacld-3.0/").exists();
+    private static boolean doesKernelExist(File kernelPath) {
+        return kernelPath.exists();
+    }
 
-        File[] patchSets = new File(patchesDir).listFiles(File::isDirectory);
-        if (patchSets != null && patchSets.length > 0) {
-            Arrays.sort(patchSets);
-            for (File patchSet : patchSets) {
-                String patchSetReal = patchSet.getName();
-                System.out.println("Checking " + patchSetReal);
-                File[] patchSetVersions =  new File(patchSet.getAbsolutePath()).listFiles(File::isDirectory);
-                ArrayList<String> versions = new ArrayList<String>();
-                for (File patchSetVersion : patchSetVersions) {
-                    String patchVersion = patchSetVersion.getName();
-                    if(isVersionInRange(kernelVersion, patchVersion)) {
-                        versions.add(patchVersion);
+    private static void checkAndGenerateScript(String kernel) {
+        String kernelPath = getKernelPath(kernel);
+        if(doesKernelExist(new File(kernelPath))) {
+            System.out.println("Starting on " + kernel);
+            KernelVersion kernelVersion = getKernelVersion(kernelPath);
+            boolean prima = new File(kernelPath + "/drivers/staging/prima/").exists();
+            boolean qcacld2 = new File(kernelPath + "/drivers/staging/qcacld-2.0/").exists();
+            boolean qcacld3 = new File(kernelPath + "/drivers/staging/qcacld-3.0/").exists();
+
+            ArrayList<String> scriptCommands = new ArrayList<String>();
+
+            //The top-level directory contains all patchsets
+            File[] patchSets = new File(patchesPath).listFiles(File::isDirectory);
+            if(patchSets != null && patchSets.length > 0) {
+                Arrays.sort(patchSets);
+
+                //Iterate over all patchsets
+                for(File patchSet : patchSets) {
+                    String patchSetName = patchSet.getName();
+                    System.out.println("\tChecking " + patchSetName);
+
+                    //Get all available versions for a patchset
+                    File[] patchSetVersions = patchSet.listFiles(File::isDirectory);
+                    ArrayList<String> versions = new ArrayList<String>();
+                    //Check which versions are applicable
+                    for (File patchSetVersion : patchSetVersions) {
+                        String patchVersion = patchSetVersion.getName();
+                        if (isVersionInRange(kernelVersion, patchVersion)) {
+                            versions.add(patchVersion);
+                        }
+                        if ((prima && patchVersion.equals("prima")) || (qcacld2 && patchVersion.equals("qcacld-2.0")) || (qcacld3 && patchVersion.equals("qcacld-3.0"))) {
+                            versions.add(patchVersion);
+                        }
                     }
-                    if((prima && patchVersion.equals("prima")) || (qcacld2 && patchVersion.equals("qcacld-2.0")) || (qcacld3 && patchVersion.equals("qcacld-3.0"))) {
-                        versions.add(patchVersion);
-                    }
-                }
-                boolean depends = new File(patchSet.toString() + "/depends").exists();
-                if(depends) {
-                    System.out.println("\tTHIS IS A DEPENDENT PATCHSET");
-                }
-                for (String version : versions) {
-                    File[] patches = new File(patchSet.getAbsolutePath() + "/" + version + "/").listFiles(File::isFile);
-                    if (patches != null && patches.length > 0) {
-                        Arrays.sort(patches);
-                        int exitCounter = 0;
-                        String patchSetFiles = "";
-                        ArrayList<String> commands = new ArrayList<String>();
-                        for(File patch : patches) {
-                            if (!patch.getName().contains(".base64") && !patch.getName().contains(".disabled") && !patch.getName().contains(".dupe") && !patch.getName().contains(".sh")) {
-                                if(depends) {
-                                    patchSetFiles += " " + patch.toString();
-                                } else {
-                                    try {
-                                        String command = "git -C " + kernel + " apply --check " + patch.toString();
-                                        for (int x = 0; x < (isWifiPatch(version) ? 2 : 1); x++) {
-                                            if (x == 1 && isWifiPatch(version)) {
-                                                System.out.println("\t\tWIFI PATCH, RUNNING AGAIN OUT OF DIR!");
-                                                command += " --directory=\"drivers/staging/" + version + "\"";
-                                            }
-                                            System.out.println("\tTesting patchset: " + command);
-                                            Process git = Runtime.getRuntime().exec(command);
-                                            while (git.isAlive()) {
-                                                //Do nothing
-                                            }
-                                            if (git.exitValue() == 0) {
-                                                command = command.replaceAll(" --check", "");
-                                                commands.add(command);
-                                                System.out.println("\t\tPatch applies successfully");
 
-                                                try {
-                                                    System.out.println("\tApplying patch: " + command);
-                                                    git = Runtime.getRuntime().exec(command);
-                                                    while (git.isAlive()) {
-                                                        //Do nothing
-                                                    }
-                                                    if (git.exitValue() != 0 && !command.contains("0001-LinuxIncrementals")) {
-                                                        System.out.println("Potential duplicate patch detected!");
-                                                        System.out.println("Failed: " + command);
-                                                        System.exit(1);
-                                                    } else {
-                                                        System.out.println("\t\tSuccessfully able to apply patch");
-                                                    }
-                                                } catch (IOException e) {
-                                                    e.printStackTrace();
-                                                }
-                                                String commandScript = command.replaceAll(" -C " + kernel, "").replaceAll(patchesDir, patchesScript);
-                                                scriptCommands.add(commandScript);
-                                            } else {
-                                                System.out.println("\t\tPatch does not apply");
-                                            }
+                    boolean depends = new File(patchSet.toString() + "/depends").exists();
+
+                    //Iterate over all applicable versions
+                    for (String version : versions) {
+                        File[] patches = new File(patchSet.getAbsolutePath() + "/" + version + "/").listFiles(File::isFile);
+                        if (patches != null && patches.length > 0) {
+                            Arrays.sort(patches);
+
+                            //Check the patches
+                            if(depends) {
+                                ArrayList<String> commands = doesPatchSetApply(kernelPath, patches, true);
+                                if(commands != null) {
+                                    scriptCommands.addAll(commands);
+                                }
+                            } else {
+                                for(File patch : patches) {
+                                    if(isValidPatchName(patch.getName())) {
+                                        String command = doesPatchApply(kernelPath, patch.getAbsolutePath(), true, "");
+                                        if (command != null) {
+                                            scriptCommands.add(command);
                                         }
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
                                     }
                                 }
                             }
                         }
-
-                        if(depends && patchSetFiles.length() > 0) {
-                            try {
-                                for (int x = 0; x < (isWifiPatch(version) ? 2 : 1); x++) {
-                                    String command = "git -C " + kernel + " apply --check " + patchSetFiles;
-                                    //TODO: FIXME! PASSING MULTIPLE FILES DOESN'T APPLY EACH ONE AFTER THE OTHER BUT ONE AT A TIME SEPARATELY
-                                    commands.add(command.replaceAll(" --check", ""));
-                                    if (x == 1 && isWifiPatch(version)) {
-                                        System.out.println("\t\tWIFI PATCH, RUNNING AGAIN OUT OF DIR!");
-                                        command += " --directory=\"drivers/staging/" + version + "\"";
-                                    }
-                                    System.out.println("\tTesting patchset: " + command);
-                                    Process git = Runtime.getRuntime().exec(command);
-                                    while (git.isAlive()) {
-                                        //Do nothing
-                                    }
-                                    exitCounter += git.exitValue();
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        if(exitCounter == 0 && depends) {
-                            for (String command : commands) {
-                                try {
-                                    System.out.println("\tApplying patch: " + command);
-                                    Process git = Runtime.getRuntime().exec(command);
-                                    while (git.isAlive()) {
-                                        //Do nothing
-                                    }
-                                    if (git.exitValue() != 0 && !command.contains("0001-LinuxIncrementals")) {
-                                        System.out.println("Potential duplicate patch detected!");
-                                        System.out.println("Failed: " + command);
-                                        System.exit(1);
-                                    } else {
-                                        System.out.println("\t\tSuccessfully able to apply patch");
-                                    }
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                String commandScript = command.replaceAll(" -C " + kernel, "").replaceAll(patchesDir, patchesScript);
-                                scriptCommands.add(commandScript);
-                            }
-                        } else {
-                                System.out.println("\t\tUnable to apply patches");
-                        }
-                    } else {
-                        System.out.println("\tNo patches available");
                     }
                 }
+            } else {
+                System.out.println("\tNo patches available");
+            }
+
+            System.out.println("\tAttempted to check all patches");
+            System.out.println("\tAble to apply " + scriptCommands.size() + " patch(es) against " + kernel);
+            try {
+                String script = scriptOutput + scriptPrefix + kernel + ".sh";
+                PrintWriter out = new PrintWriter(script, "UTF-8");
+                out.println("#!/bin/bash");
+                out.println("cd $base\"kernel/" + kernel.replaceAll("_", "/") + "\"");
+                for (String command : scriptCommands) {
+                    out.println(command);
+                }
+                out.println("cd $base");
+                out.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         } else {
-            System.out.println("No CVEs available");
+            System.out.println("Invalid kernel: " + kernel);
         }
-        System.out.println("Attempted to check all patches");
-        System.out.println("Able to apply " + scriptCommands.size() + " patch(es)");
+    }
 
+    private static boolean isValidPatchName(String patch) {
+        return !patch.contains(".base64") && !patch.contains(".disabled") && !patch.contains(".dupe") && !patch.contains(".sh");
+    }
+
+    private static String logPretty(String string, String kernelPath) {
+        string = string.replaceAll(kernelPath, "\\$kernelPath");
+        string = string.replaceAll(patchesPath, "\\$patchesPath/");
+        return string;
+    }
+
+    private static String doesPatchApply(String kernelPath, String patch, boolean applyPatch, String alternateRoot) {
+        String command = "git -C " + kernelPath + " apply --check " + patch;
         try {
-            PrintWriter out = new PrintWriter(output, "UTF-8");
-            out.println("#!/bin/bash");
-            out.println("cd $base\"" + kernelPath + "\"");
-            for (String cmd : scriptCommands) {
-                out.println(cmd);
+            Process gitCheck = Runtime.getRuntime().exec(command);
+            while (gitCheck.isAlive()) {
+                //Do nothing
             }
-            out.println("cd $base");
-            out.close();
-        } catch (Exception e) {
+            if(gitCheck.exitValue() == 0) {
+                command = command.replaceAll(" --check", "");
+                if(alternateRoot.length() > 0) {
+                    command += " --directory=\"" + alternateRoot + "\"";
+                }
+                System.out.println("\t\tPatch can apply successfully: " + logPretty(command, kernelPath));
+                if(applyPatch) {
+                    Process gitApply = Runtime.getRuntime().exec(command);
+                    while (gitApply.isAlive()) {
+                        //Do nothing
+                    }
+                    if(gitApply.exitValue() == 0) {
+                        System.out.println("\t\t\tPatch applied successfully: " + logPretty(command, kernelPath));
+                    } else {
+                        System.out.println("\t\t\tPatched failed to apply after being checked! " + logPretty(command, kernelPath));
+                        System.exit(1);
+                    }
+                }
+                return command.replaceAll(" -C " + kernelPath, "").replaceAll(patchesPath, patchesPathScript);
+            } else {
+                System.out.println("\t\tPatch does not apply successfully: " + logPretty(command, kernelPath));
+                if(isWifiPatch(patch)) {
+                    System.out.println("\t\t\tThis is a Wi-Fi patch, it might need to be applied directly! Currently unsupported");
+                    //TODO: GET THE VERSION
+                    //return doesPatchApply(kernelPath, patch, applyPatch, "drivers/staging/" + version);
+                }
+            }
+        } catch(Exception e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    private static ArrayList<String> doesPatchSetApply(String kernelPath, File[] patchset, boolean applyPatches) {
+        System.out.println("Checking dependent patchset");
+        ArrayList<String> commands = new ArrayList<String>();
+        for(File patch : patchset) {
+            if(isValidPatchName(patch.getName())) {
+                String command = doesPatchApply(kernelPath, patch.getAbsolutePath(), applyPatches, "");
+                if (command != null) {
+                    commands.add(command);
+                } else {
+                    return null;
+                }
+            }
+        }
+        return commands;
+    }
+
+    public static KernelVersion getKernelVersion(String kernelPath) {
+        String kernelVersion = "";
+        try {
+            Scanner kernelMakefile = new Scanner(new File(kernelPath + "/Makefile"));
+            while (kernelMakefile.hasNextLine()) {
+                String line = kernelMakefile.nextLine();
+                if (line.startsWith("VERSION = ")) {
+                    kernelVersion = line.split("= ")[1];
+                }
+                if (line.startsWith("PATCHLEVEL = ")) {
+                    kernelVersion += "." + line.split("= ")[1];
+                }
+                if (line.startsWith("NAME = ")) {
+                    break;
+                }
+            }
+            kernelMakefile.close();
+            System.out.println("Detected version " + kernelVersion);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return new KernelVersion(kernelVersion);
     }
 
     public static boolean isVersionInRange(KernelVersion kernel, String patch) {
@@ -206,78 +232,8 @@ public class Patcher {
         return false;
     }
 
-    public static KernelVersion getKernelVersion(String path) {
-        String kernelVersion = "";
-        try {
-            Scanner kernelMakefile = new Scanner(new File(base + path + "/Makefile"));
-            while (kernelMakefile.hasNextLine()) {
-                String line = kernelMakefile.nextLine();
-                if (line.startsWith("VERSION = ")) {
-                    kernelVersion = line.split("= ")[1];
-                }
-                if (line.startsWith("PATCHLEVEL = ")) {
-                    kernelVersion += "." + line.split("= ")[1];
-                }
-                if (line.startsWith("NAME = ")) {
-                    break;
-                }
-            }
-            kernelMakefile.close();
-            System.out.println("DETECTED VERSION " + kernelVersion);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return new KernelVersion(kernelVersion);
-    }
-
-    public static boolean isWifiPatch(String version) {
-        return version.equals("prima") || version.startsWith("qcacld");
-    }
-
-    public static class KernelVersion {
-
-        private String versionFull = "";
-        private int version = 0;
-        private int patchLevel = 0;
-
-        public KernelVersion(String version) {
-            this.versionFull = version;
-            String[] versionSplit = version.split("\\.");
-            this.version = Integer.valueOf(versionSplit[0]);
-            this.patchLevel = Integer.valueOf(versionSplit[1]);
-        }
-
-        public KernelVersion(int version, int patchLevel) {
-            this.versionFull = version + "." + patchLevel;
-            this.version = version;
-            this.patchLevel = patchLevel;
-        }
-
-        public String getVersionFull() {
-            return versionFull;
-        }
-
-        public int getVersion() {
-            return version;
-        }
-
-        public int getPatchLevel() {
-            return patchLevel;
-        }
-
-        public boolean isGreaterVersion(KernelVersion comparedTo) {
-            if(getVersion() > comparedTo.getVersion()) {
-                return true;
-            }
-            return getVersion() == comparedTo.getVersion() && getPatchLevel() >= comparedTo.getPatchLevel();
-        }
-
-        public boolean isLesserVersion(KernelVersion comparedTo) {
-            if(getVersion() < comparedTo.getVersion()) {
-                return true;
-            }
-            return getVersion() == comparedTo.getVersion() && getPatchLevel() <= comparedTo.getPatchLevel();
-        }
+    public static boolean isWifiPatch(String patch) {
+        return patch.contains("/prima/") || patch.contains("/qcacld-");
     }
 
 }
