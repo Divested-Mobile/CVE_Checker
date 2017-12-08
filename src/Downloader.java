@@ -11,6 +11,10 @@ public class Downloader {
 
     private static String cveJson = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/Kernel_CVE_Patch_List.txt";
     private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/";
+
+    //private static String cveJson = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Android/Android_CVEs.txt";
+    //private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Android/";
+
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
     private static final String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36";
 

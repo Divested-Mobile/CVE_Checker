@@ -1,17 +1,17 @@
-public class KernelVersion {
+public class Version {
 
     private String versionFull = "";
     private int version = 0;
     private int patchLevel = 0;
 
-    public KernelVersion(String version) {
+    public Version(String version) {
         this.versionFull = version;
         String[] versionSplit = version.split("\\.");
         this.version = Integer.valueOf(versionSplit[0]);
         this.patchLevel = Integer.valueOf(versionSplit[1]);
     }
 
-    public KernelVersion(int version, int patchLevel) {
+    public Version(int version, int patchLevel) {
         this.versionFull = version + "." + patchLevel;
         this.version = version;
         this.patchLevel = patchLevel;
@@ -29,14 +29,14 @@ public class KernelVersion {
         return patchLevel;
     }
 
-    public boolean isGreaterVersion(KernelVersion comparedTo) {
+    public boolean isGreaterVersion(Version comparedTo) {
         if (getVersion() > comparedTo.getVersion()) {
             return true;
         }
         return getVersion() == comparedTo.getVersion() && getPatchLevel() >= comparedTo.getPatchLevel();
     }
 
-    public boolean isLesserVersion(KernelVersion comparedTo) {
+    public boolean isLesserVersion(Version comparedTo) {
         if (getVersion() < comparedTo.getVersion()) {
             return true;
         }
