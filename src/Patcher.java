@@ -8,6 +8,9 @@ import java.util.Scanner;
 
 public class Patcher {
 
+    private static final int REPO_TYPE_KERNEL = 0;
+    private static final int REPO_TYPE_ANDROID = 1;
+
     private static final String androidWorkspace = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
     private static final String patchesPathLinux = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/";
     private static final String patchesPathAndroid = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Android/";
@@ -34,6 +37,14 @@ public class Patcher {
         }
     }
 
+    private static int getRepoType(String repoPath) {
+        if(repoPath.contains("kernel")) {
+            return REPO_TYPE_KERNEL;
+        } else {
+            return REPO_TYPE_ANDROID;
+        }
+    }
+
     private static String getRepoPath(String repo) {
         return androidWorkspace + repo.replaceAll("_", "/");
     }
@@ -42,16 +53,18 @@ public class Patcher {
         return repoPath.exists();
     }
 
-    private static void checkAndGenerateScript(String kernel) {
-        String kernelPath = getRepoPath(kernel);
-        if (doesRepoExist(new File(kernelPath))) {
-            System.out.println("Starting on " + kernel);
-            Version kernelVersion = getKernelVersion(kernelPath);
-            boolean prima = new File(kernelPath + "/drivers/staging/prima/").exists();
-            boolean qcacld2 = new File(kernelPath + "/drivers/staging/qcacld-2.0/").exists();
-            boolean qcacld3 = new File(kernelPath + "/drivers/staging/qcacld-3.0/").exists();
-
+    private static void checkAndGenerateScript(String repo) {
+        String repoPath = getRepoPath(repo);
+        if (doesRepoExist(new File(repoPath))) {
+            int repoType = getRepoType(repoPath);
+            System.out.println("Starting on " + repo);
             ArrayList<String> scriptCommands = new ArrayList<>();
+
+            Version kernelVersion = getKernelVersion(repoPath);
+            boolean prima = new File(repoPath + "/drivers/staging/prima/").exists();
+            boolean qcacld2 = new File(repoPath + "/drivers/staging/qcacld-2.0/").exists();
+            boolean qcacld3 = new File(repoPath + "/drivers/staging/qcacld-3.0/").exists();
+
 
             //The top-level directory contains all patchsets
             File[] patchSets = new File(patchesPathLinux).listFiles(File::isDirectory);
@@ -87,14 +100,14 @@ public class Patcher {
 
                             //Check the patches
                             if (depends) {
-                                ArrayList<String> commands = doesPatchSetApply(kernelPath, patches, true);
+                                ArrayList<String> commands = doesPatchSetApply(repoPath, patches, true);
                                 if (commands != null) {
                                     scriptCommands.addAll(commands);
                                 }
                             } else {
                                 for (File patch : patches) {
                                     if (isValidPatchName(patch.getName())) {
-                                        String command = doesPatchApply(kernelPath, patch.getAbsolutePath(), true, "");
+                                        String command = doesPatchApply(repoPath, patch.getAbsolutePath(), true, "");
                                         if (command != null) {
                                             scriptCommands.add(command);
                                         }
@@ -109,12 +122,12 @@ public class Patcher {
             }
 
             System.out.println("\tAttempted to check all patches");
-            System.out.println("\tAble to apply " + scriptCommands.size() + " patch(es) against " + kernel);
+            System.out.println("\tAble to apply " + scriptCommands.size() + " patch(es) against " + repo);
             try {
-                String script = scriptOutput + scriptPrefix + kernel + ".sh";
+                String script = scriptOutput + scriptPrefix + repo + ".sh";
                 PrintWriter out = new PrintWriter(script, "UTF-8");
                 out.println("#!/bin/bash");
-                out.println("cd $base\"kernel/" + kernel.replaceAll("_", "/") + "\"");
+                out.println("cd $base\"kernel/" + repo.replaceAll("_", "/") + "\"");
                 for (String command : scriptCommands) {
                     out.println(command);
                 }
@@ -124,7 +137,7 @@ public class Patcher {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("Invalid kernel: " + kernel);
+            System.out.println("Invalid repo: " + repo);
         }
     }
 
@@ -221,6 +234,11 @@ public class Patcher {
             e.printStackTrace();
         }
         return new Version(kernelVersion);
+    }
+
+    private static Version getAndroidVersion(String androidPath) {
+        String androidVersion = "";
+        return new Version(androidVersion);
     }
 
     private static boolean isVersionInRange(Version kernel, String patch) {
