@@ -65,7 +65,6 @@ public class Patcher {
             boolean qcacld2 = new File(repoPath + "/drivers/staging/qcacld-2.0/").exists();
             boolean qcacld3 = new File(repoPath + "/drivers/staging/qcacld-3.0/").exists();
 
-
             //The top-level directory contains all patchsets
             File[] patchSets = new File(patchesPathLinux).listFiles(File::isDirectory);
             if (patchSets != null && patchSets.length > 0) {
@@ -230,7 +229,7 @@ public class Patcher {
             }
             kernelMakefile.close();
             System.out.println("Detected version " + kernelVersion);
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return new Version(kernelVersion);
@@ -238,6 +237,21 @@ public class Patcher {
 
     private static Version getAndroidVersion(String androidPath) {
         String androidVersion = "";
+        try {
+            Scanner repoManifest = new Scanner(new File(androidPath + "/.repo/manifest.xml"));
+            while(repoManifest.hasNextLine()) {
+                String line = repoManifest.nextLine();
+                if(line.startsWith("revision") && line.contains("android")) { //revision="refs/tags/android-7.1.2_r29"
+                    String versionTmp = line.split("\"")[1]; //refs/tags/android-7.1.2_r29
+                    versionTmp = versionTmp.replaceAll("refs/tags/android-", ""); //7.1.2_r29
+                    versionTmp = versionTmp.split("_")[0]; //7.1.2
+                    androidVersion = versionTmp;
+                    break;
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
         return new Version(androidVersion);
     }
 

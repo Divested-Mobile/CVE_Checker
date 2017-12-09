@@ -9,20 +9,29 @@ import java.util.Scanner;
 
 public class Downloader {
 
-    private static String cveJson = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/Kernel_CVE_Patch_List.txt";
-    private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/";
-
-    //private static String cveJson = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Android/Android_CVEs.txt";
-    //private static String output = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Android/";
+    // /mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/Kernel_CVE_Patch_List.txt
+    // /mnt/Drive-1/Development/Other/Android_ROMs/Patches/Android/Android_CVEs.txt
 
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
     private static final String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36";
 
     public static void main(String[] args) {
+        String cveManifest = "";
+        Scanner s = new Scanner(System.in);
+        while(s.hasNextLine()) {
+            cveManifest = s.nextLine();
+            break;
+        }
+        s.close();
+        String output = "";
+
         //Read in all the CVEs from the JSON file
         try {
             System.out.println("Parsing...");
-            Scanner cve = new Scanner(new File(cveJson));
+            File cveManifestReal = new File(cveManifest);
+            Scanner cve = new Scanner(cveManifestReal);
+            output = cveManifestReal.getParent() + "/";
+            System.out.println(output);
             String name = "";
             boolean depends = false;
             ArrayList<Link> links = new ArrayList<Link>();
