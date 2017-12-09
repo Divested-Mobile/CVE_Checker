@@ -63,14 +63,17 @@ public class Patcher {
             Version repoVersion = null;
             String patchesPath = "";
             String patchesPathScript = "";
+            boolean ignoreMajor = false;
             if(repoType == REPO_TYPE_KERNEL) {
                 repoVersion = getKernelVersion(repoPath);
                 patchesPath = patchesPathLinux;
                 patchesPathScript = patchesPathScriptLinux;
+                ignoreMajor = false;
             } else if(repoType == REPO_TYPE_ANDROID) {
                 repoVersion = getAndroidVersion(androidWorkspace);
                 patchesPath = patchesPathAndroid;
                 patchesPathScript = patchesPathScriptAndroid;
+                ignoreMajor = true;
             }
 
             boolean prima = new File(repoPath + "/drivers/staging/prima/").exists();
@@ -93,7 +96,7 @@ public class Patcher {
                     //Check which versions are applicable
                     for (File patchSetVersion : patchSetVersions) {
                         String patchVersion = patchSetVersion.getName();
-                        if (isVersionInRange(repoVersion, patchVersion)) {
+                        if (isVersionInRange(repoVersion, patchVersion, ignoreMajor)) {
                             versions.add(patchVersion);
                         }
                         if(repoType == REPO_TYPE_KERNEL) {
@@ -136,7 +139,9 @@ public class Patcher {
 
             System.out.println("\tAttempted to check all patches");
             System.out.println("\tAble to apply " + scriptCommands.size() + " patch(es) against " + repo);
-            writeScript(repo, scriptCommands);
+            if(scriptCommands.size() > 0) {
+                writeScript(repo, scriptCommands);
+            }
         } else {
             System.out.println("Invalid repo: " + repo);
         }
@@ -256,11 +261,11 @@ public class Patcher {
     private static Version getAndroidVersion(String androidPath) {
         String androidVersion = "";
         try {
-            Scanner repoManifest = new Scanner(new File(androidPath + "/.repo/manifest.xml"));
+            Scanner repoManifest = new Scanner(new File(androidPath + "/.repo/manifests/default.xml"));
             while(repoManifest.hasNextLine()) {
                 String line = repoManifest.nextLine();
-                if(line.startsWith("revision") && line.contains("android")) { //revision="refs/tags/android-7.1.2_r29"
-                    String versionTmp = line.split("\"")[1]; //refs/tags/android-7.1.2_r29
+                if(line.contains("revision") && line.contains("android")) { //revision="refs/tags/android-7.1.2_r29"
+                    String versionTmp = line.trim().split("\"")[1]; //refs/tags/android-7.1.2_r29
                     versionTmp = versionTmp.replaceAll("refs/tags/android-", ""); //7.1.2_r29
                     versionTmp = versionTmp.split("_")[0]; //7.1.2
                     androidVersion = versionTmp;
@@ -274,22 +279,22 @@ public class Patcher {
         return new Version(androidVersion);
     }
 
-    private static boolean isVersionInRange(Version kernel, String patch) {
+    private static boolean isVersionInRange(Version repo, String patch, boolean ignoreMajor) {
         if (patch.equals("ANY")) {
             return true;
-        } else if (kernel.getVersionFull().equals(patch)) {
+        } else if (repo.getVersionFull().equals(patch)) {
             return true;
         } else if (patch.startsWith("^")) {
             Version patchVersion = new Version(patch.replaceAll("\\^", ""));
-            return kernel.isLesserVersion(patchVersion);
+            return repo.isLesserVersion(patchVersion, ignoreMajor);
         } else if (patch.endsWith("+")) {
             Version patchVersion = new Version(patch.replaceAll("\\+", ""));
-            return kernel.isGreaterVersion(patchVersion);
+            return repo.isGreaterVersion(patchVersion, ignoreMajor);
         } else if (patch.contains("-^")) {
             String[] patchS = patch.split("-\\^");
             Version patchVersionLower = new Version(patchS[0]);
             Version patchVersionHigher = new Version(patchS[1]);
-            return (kernel.isGreaterVersion(patchVersionLower) && kernel.isLesserVersion(patchVersionHigher));
+            return (repo.isGreaterVersion(patchVersionLower, ignoreMajor) && repo.isLesserVersion(patchVersionHigher, ignoreMajor));
         }
         return false;
     }

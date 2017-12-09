@@ -29,17 +29,25 @@ public class Version {
         return patchLevel;
     }
 
-    public boolean isGreaterVersion(Version comparedTo) {
+    public boolean isGreaterVersion(Version comparedTo, boolean ignoreMajor) {
         if (getVersion() > comparedTo.getVersion()) {
             return true;
         }
-        return getVersion() == comparedTo.getVersion() && getPatchLevel() >= comparedTo.getPatchLevel();
+        if(!ignoreMajor) {
+            return getVersion() == comparedTo.getVersion() && getPatchLevel() >= comparedTo.getPatchLevel();
+        } else {
+            return getVersion() >= comparedTo.getVersion() && getPatchLevel() >= comparedTo.getPatchLevel();
+        }
     }
 
-    public boolean isLesserVersion(Version comparedTo) {
+    public boolean isLesserVersion(Version comparedTo, boolean ignoreMajor) {
         if (getVersion() < comparedTo.getVersion()) {
             return true;
         }
-        return getVersion() == comparedTo.getVersion() && getPatchLevel() <= comparedTo.getPatchLevel();
+        if(!ignoreMajor) {
+            return getVersion() == comparedTo.getVersion() && getPatchLevel() <= comparedTo.getPatchLevel();
+        } else {
+            return getVersion() <= comparedTo.getVersion() && getPatchLevel() <= comparedTo.getPatchLevel();
+        }
     }
 }
