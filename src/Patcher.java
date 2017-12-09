@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -12,8 +11,9 @@ public class Patcher {
     private static final int REPO_TYPE_ANDROID = 1;
 
     private static final String androidWorkspace = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
-    private static final String patchesPathLinux = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/";
-    private static final String patchesPathAndroid = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Android/";
+    private static final String patchesPathRoot = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/";
+    private static final String patchesPathLinux = patchesPathRoot + "Linux/";
+    private static final String patchesPathAndroid = patchesPathRoot + "Android/";
     private static final String patchesPathScriptLinux = "\\$cvePatchesLinux/";
     private static final String patchesPathScriptAndroid = "\\$cvePatchesAndroid/";
     private static final String scriptPrefix = "android_";
@@ -56,17 +56,29 @@ public class Patcher {
     private static void checkAndGenerateScript(String repo) {
         String repoPath = getRepoPath(repo);
         if (doesRepoExist(new File(repoPath))) {
-            int repoType = getRepoType(repoPath);
             System.out.println("Starting on " + repo);
             ArrayList<String> scriptCommands = new ArrayList<>();
 
-            Version kernelVersion = getKernelVersion(repoPath);
+            int repoType = getRepoType(repoPath);
+            Version repoVersion = null;
+            String patchesPath = "";
+            String patchesPathScript = "";
+            if(repoType == REPO_TYPE_KERNEL) {
+                repoVersion = getKernelVersion(repoPath);
+                patchesPath = patchesPathLinux;
+                patchesPathScript = patchesPathScriptLinux;
+            } else if(repoType == REPO_TYPE_ANDROID) {
+                repoVersion = getAndroidVersion(androidWorkspace);
+                patchesPath = patchesPathAndroid;
+                patchesPathScript = patchesPathScriptAndroid;
+            }
+
             boolean prima = new File(repoPath + "/drivers/staging/prima/").exists();
             boolean qcacld2 = new File(repoPath + "/drivers/staging/qcacld-2.0/").exists();
             boolean qcacld3 = new File(repoPath + "/drivers/staging/qcacld-3.0/").exists();
 
             //The top-level directory contains all patchsets
-            File[] patchSets = new File(patchesPathLinux).listFiles(File::isDirectory);
+            File[] patchSets = new File(patchesPath).listFiles(File::isDirectory);
             if (patchSets != null && patchSets.length > 0) {
                 Arrays.sort(patchSets);
 
@@ -81,11 +93,13 @@ public class Patcher {
                     //Check which versions are applicable
                     for (File patchSetVersion : patchSetVersions) {
                         String patchVersion = patchSetVersion.getName();
-                        if (isVersionInRange(kernelVersion, patchVersion)) {
+                        if (isVersionInRange(repoVersion, patchVersion)) {
                             versions.add(patchVersion);
                         }
-                        if ((prima && patchVersion.equals("prima")) || (qcacld2 && patchVersion.equals("qcacld-2.0")) || (qcacld3 && patchVersion.equals("qcacld-3.0"))) {
-                            versions.add(patchVersion);
+                        if(repoType == REPO_TYPE_KERNEL) {
+                            if ((prima && patchVersion.equals("prima")) || (qcacld2 && patchVersion.equals("qcacld-2.0")) || (qcacld3 && patchVersion.equals("qcacld-3.0"))) {
+                                versions.add(patchVersion);
+                            }
                         }
                     }
 
@@ -99,14 +113,14 @@ public class Patcher {
 
                             //Check the patches
                             if (depends) {
-                                ArrayList<String> commands = doesPatchSetApply(repoPath, patches, true);
+                                ArrayList<String> commands = doesPatchSetApply(repoPath, patches, true, patchesPath, patchesPathScript);
                                 if (commands != null) {
                                     scriptCommands.addAll(commands);
                                 }
                             } else {
                                 for (File patch : patches) {
                                     if (isValidPatchName(patch.getName())) {
-                                        String command = doesPatchApply(repoPath, patch.getAbsolutePath(), true, "");
+                                        String command = doesPatchApply(repoPath, patch.getAbsolutePath(), true, "", patchesPath, patchesPathScript);
                                         if (command != null) {
                                             scriptCommands.add(command);
                                         }
@@ -122,21 +136,25 @@ public class Patcher {
 
             System.out.println("\tAttempted to check all patches");
             System.out.println("\tAble to apply " + scriptCommands.size() + " patch(es) against " + repo);
-            try {
-                String script = scriptOutput + scriptPrefix + repo + ".sh";
-                PrintWriter out = new PrintWriter(script, "UTF-8");
-                out.println("#!/bin/bash");
-                out.println("cd $base\"kernel/" + repo.replaceAll("_", "/") + "\"");
-                for (String command : scriptCommands) {
-                    out.println(command);
-                }
-                out.println("cd $base");
-                out.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            writeScript(repo, scriptCommands);
         } else {
             System.out.println("Invalid repo: " + repo);
+        }
+    }
+
+    private static void writeScript(String repo, ArrayList<String> scriptCommands) {
+        try {
+            String script = scriptOutput + scriptPrefix + repo + ".sh";
+            PrintWriter out = new PrintWriter(script, "UTF-8");
+            out.println("#!/bin/bash");
+            out.println("cd $base\"" + repo.replaceAll("_", "/") + "\"");
+            for (String command : scriptCommands) {
+                out.println(command);
+            }
+            out.println("cd $base");
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -146,7 +164,7 @@ public class Patcher {
 
     private static String logPretty(String string, String repoPath) {
         string = string.replaceAll(repoPath, "\\$repoPath");
-        string = string.replaceAll(patchesPathLinux, "\\$patchesPathLinux/");
+        string = string.replaceAll(patchesPathRoot, "\\$patchesPathRoot/");
         return string;
     }
 
@@ -163,7 +181,7 @@ public class Patcher {
         return -1;
     }
 
-    private static String doesPatchApply(String repoPath, String patch, boolean applyPatch, String alternateRoot) {
+    private static String doesPatchApply(String repoPath, String patch, boolean applyPatch, String alternateRoot, String patchesPath, String patchesPathScript) {
         String command = "git -C " + repoPath + " apply --check " + patch;
         try {
             if (runCommand(command) == 0) {
@@ -180,7 +198,7 @@ public class Patcher {
                         System.exit(1);
                     }
                 }
-                return command.replaceAll(" -C " + repoPath, "").replaceAll(patchesPathLinux, patchesPathScriptLinux);
+                return command.replaceAll(" -C " + repoPath, "").replaceAll(patchesPath, patchesPathScript);
             } else {
                 System.out.println("\t\tPatch does not apply successfully: " + logPretty(command, repoPath));
                 if (isWifiPatch(patch)) {
@@ -195,12 +213,12 @@ public class Patcher {
         return null;
     }
 
-    private static ArrayList<String> doesPatchSetApply(String repoPath, File[] patchset, boolean applyPatches) {
+    private static ArrayList<String> doesPatchSetApply(String repoPath, File[] patchset, boolean applyPatches, String patchesPath, String patchesPathScript) {
         System.out.println("Checking dependent patchset");
         ArrayList<String> commands = new ArrayList<>();
         for (File patch : patchset) {
             if (isValidPatchName(patch.getName())) {
-                String command = doesPatchApply(repoPath, patch.getAbsolutePath(), applyPatches, "");
+                String command = doesPatchApply(repoPath, patch.getAbsolutePath(), applyPatches, "", patchesPath, patchesPathScript);
                 if (command != null) {
                     commands.add(command);
                 } else {
@@ -228,7 +246,7 @@ public class Patcher {
                 }
             }
             kernelMakefile.close();
-            System.out.println("Detected version " + kernelVersion);
+            System.out.println("Detected kernel version " + kernelVersion);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -249,6 +267,7 @@ public class Patcher {
                     break;
                 }
             }
+            System.out.println("Detected Android version " + androidVersion);
         } catch(Exception e) {
             e.printStackTrace();
         }
