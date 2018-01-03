@@ -121,7 +121,7 @@ public class Downloader {
                             System.out.println("\t\tDownloaded " + link.getURL());
                             linkC++;
                         } else {
-                            System.out.println("NOT A PATCH - " + link);
+                            System.out.println("NOT A PATCH - " + link.getURL());
                         }
                     }
                 }
@@ -132,7 +132,9 @@ public class Downloader {
 
     private static String getPatchURL(Link link) {
         String url = link.getURL().replaceAll("http://", "https://");
-        if (url.contains("github.com")) {
+        if(url.contains("lkml.org/lkml/diff")) {
+            return url;
+        } else if (url.contains("github.com")) {
             return url + ".patch";
         } else if (url.contains("git.kernel.org")) {
             return url.replaceAll("cgit/", "pub/scm/").replaceAll("commit", "patch");

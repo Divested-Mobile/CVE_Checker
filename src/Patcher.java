@@ -219,7 +219,7 @@ public class Patcher {
     }
 
     private static ArrayList<String> doesPatchSetApply(String repoPath, File[] patchset, boolean applyPatches, String patchesPath, String patchesPathScript) {
-        System.out.println("Checking dependent patchset");
+        System.out.println("\t\tChecking dependent patchset");
         ArrayList<String> commands = new ArrayList<>();
         for (File patch : patchset) {
             if (isValidPatchName(patch.getName())) {
