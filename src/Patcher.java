@@ -23,7 +23,7 @@ public class Patcher {
     public static void main(String[] args) {
         if (args.length > 0) {
             for (String repo : args) {
-                checkAndGenerateScript(repo);
+                checkAndGenerateScript(repo, null);
             }
         } else {
             System.out.println("No repos passed, accepting input from stdin");
@@ -31,7 +31,7 @@ public class Patcher {
             while (s.hasNextLine()) {
                 String line = s.nextLine();
                 if (line.length() > 0) {
-                    checkAndGenerateScript(line);
+                    checkAndGenerateScript(line, null);
                 }
             }
         }
@@ -53,11 +53,16 @@ public class Patcher {
         return repoPath.exists();
     }
 
-    private static void checkAndGenerateScript(String repo) {
+    private static void checkAndGenerateScript(String repo, ArrayList<String> scriptCommands) {
         String repoPath = getRepoPath(repo);
         if (doesRepoExist(new File(repoPath))) {
             System.out.println("Starting on " + repo);
-            ArrayList<String> scriptCommands = new ArrayList<>();
+            boolean firstRun = true;
+            if(scriptCommands == null) {
+                scriptCommands = new ArrayList<>();
+            } else {
+                firstRun = false;
+            }
 
             int repoType = getRepoType(repoPath);
             Version repoVersion = null;
@@ -89,6 +94,10 @@ public class Patcher {
                 for (File patchSet : patchSets) {
                     String patchSetName = patchSet.getName();
                     System.out.println("\tChecking " + patchSetName);
+                    if(!firstRun && patchSetName.equals("0001-LinuxIncrementals")) {
+                        System.out.println("\t\tThis is a second pass, skipping Linux incrementals");
+                        continue;
+                    }
 
                     //Get all available versions for a patchset
                     File[] patchSetVersions = patchSet.listFiles(File::isDirectory);
@@ -140,7 +149,12 @@ public class Patcher {
             System.out.println("\tAttempted to check all patches");
             System.out.println("\tAble to apply " + scriptCommands.size() + " patch(es) against " + repo);
             if(scriptCommands.size() > 0) {
-                writeScript(repo, scriptCommands);
+                if(firstRun) {
+                    System.out.println("\tPerforming second pass to check for unmarked dependents");
+                    checkAndGenerateScript(repo, scriptCommands);
+                } else {
+                    writeScript(repo, scriptCommands);
+                }
             }
         } else {
             System.out.println("Invalid repo: " + repo);
