@@ -58,10 +58,12 @@ public class Patcher {
         if (doesRepoExist(new File(repoPath))) {
             System.out.println("Starting on " + repo);
             boolean firstRun = true;
+            int firstPass = 0;
             if(scriptCommands == null) {
                 scriptCommands = new ArrayList<>();
             } else {
                 firstRun = false;
+                firstPass = scriptCommands.size();
             }
 
             int repoType = getRepoType(repoPath);
@@ -146,13 +148,13 @@ public class Patcher {
                 System.out.println("\tNo patches available");
             }
 
-            System.out.println("\tAttempted to check all patches");
-            System.out.println("\tAble to apply " + scriptCommands.size() + " patch(es) against " + repo);
             if(scriptCommands.size() > 0) {
                 if(firstRun) {
                     System.out.println("\tPerforming second pass to check for unmarked dependents");
                     checkAndGenerateScript(repo, scriptCommands);
                 } else {
+                    System.out.println("\tAttempted to check all patches against " + repo);
+                    System.out.println("\tApplied " + scriptCommands.size() + " patch(es) - 1st Pass: " + firstPass + ", 2nd Pass: " + (scriptCommands.size() - firstPass));
                     writeScript(repo, scriptCommands);
                 }
             }
