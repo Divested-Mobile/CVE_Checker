@@ -172,7 +172,7 @@ public class Patcher {
             for (String command : scriptCommands) {
                 out.println(command);
             }
-            out.println("editKernelLocalversion \"-dos.hp\"");
+            out.println("editKernelLocalversion \"-dos.p" + scriptCommands.size() + "\"");
             out.println("cd $base");
             out.close();
         } catch (Exception e) {
