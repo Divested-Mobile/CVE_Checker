@@ -10,22 +10,30 @@ public class Patcher {
     private static final int REPO_TYPE_KERNEL = 0;
     private static final int REPO_TYPE_ANDROID = 1;
 
-    private static final String androidWorkspace = "/mnt/Drive-1/Development/Other/Android_ROMs/Build/LineageOS-14.1/";
-    private static final String patchesPathRoot = "/mnt/Drive-1/Development/Other/Android_ROMs/Patches/";
+    private static String androidWorkspace = "/mnt/Drive-3/Build/LineageOS-14.1/";
+    private static String patchesPathRoot = "/mnt/Drive-3/Patches/";
     private static final String patchesPathLinux = patchesPathRoot + "Linux/";
     private static final String patchesPathAndroid = patchesPathRoot + "Android/";
     private static final String patchesPathScriptLinux = "\\$cvePatchesLinux/";
     private static final String patchesPathScriptAndroid = "\\$cvePatchesAndroid/";
     private static final String scriptPrefix = "android_";
-    private static final String scriptOutput = "/mnt/Drive-1/Development/Other/Android_ROMs/Scripts/LineageOS-14.1/CVE_Patchers/";
+    private static String scriptOutput = "/mnt/Drive-3/Scripts/LineageOS-14.1/CVE_Patchers/";
 
 
-    public static void main(String[] args) {
-        if (args.length > 0) {
+    public static void patch(String[] args) {
+        androidWorkspace = args[1];
+        patchesPathRoot = args[2];
+        scriptOutput = args[3];
+        if (args.length > 4) {
+            int c = 0;
             for (String repo : args) {
+                if(c < 4) {
+                    c++;
+                    continue;
+                }
                 checkAndGenerateScript(repo, null);
             }
-        } else {
+        } else if(args.length == 4) {
             System.out.println("No repos passed, accepting input from stdin");
             Scanner s = new Scanner(System.in);
             while (s.hasNextLine()) {

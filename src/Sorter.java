@@ -8,9 +8,9 @@ public class Sorter {
 
     private static ArrayList<CVE> cves = new ArrayList<>();
 
-    public static void main(String[] args) {
+    public static void sort(File manifest) {
         try {
-            Scanner s = new Scanner(new File("/home/***REMOVED***/Downloads/Kernel_CVE_Patch_List.txt"));
+            Scanner s = new Scanner(manifest);
             String curId = "";
             ArrayList<String> lines = new ArrayList<String>();
             while (s.hasNextLine()) {

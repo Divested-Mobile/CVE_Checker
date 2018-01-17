@@ -5,9 +5,9 @@ import java.util.Set;
 
 public class RepoExtractor {
 
-    public static void main(String[] args) {
+    public static void extract(File manifest) {
         try {
-            Scanner s = new Scanner(new File("/mnt/Drive-1/Development/Other/Android_ROMs/Patches/Android/Android_CVEs.txt"));
+            Scanner s = new Scanner(manifest);
             Set<String> repos = new HashSet<String>();
             while(s.hasNextLine()) {
                 String line = s.nextLine();

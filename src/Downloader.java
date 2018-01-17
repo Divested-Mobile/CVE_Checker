@@ -9,26 +9,16 @@ import java.util.Scanner;
 
 public class Downloader {
 
-    // /mnt/Drive-1/Development/Other/Android_ROMs/Patches/Linux/Kernel_CVE_Patch_List.txt
-    // /mnt/Drive-1/Development/Other/Android_ROMs/Patches/Android/Android_CVEs.txt
-
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
     private static final String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36";
 
-    public static void main(String[] args) {
-        String cveManifest = "";
-        Scanner s = new Scanner(System.in);
-        while(s.hasNextLine()) {
-            cveManifest = s.nextLine();
-            break;
-        }
-        s.close();
+    public static void download(File manifest) {
         String output = "";
 
         //Read in all the CVEs from the JSON file
         try {
             System.out.println("Parsing...");
-            File cveManifestReal = new File(cveManifest);
+            File cveManifestReal = manifest;
             Scanner cve = new Scanner(cveManifestReal);
             output = cveManifestReal.getParent() + "/";
             System.out.println(output);
