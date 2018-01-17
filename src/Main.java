@@ -36,11 +36,11 @@ public class Main {
         System.out.println("DivestOS Patch Downloader/Checker");
         System.out.println("Copyright 2017-2018 Spot Communications, Inc.");
         System.out.println("License: GPLv3");
+        System.out.println("");
     }
 
     private static void printHelp() {
         String launchCommand = "java -jar patcher.jar";
-        System.out.println("");
         System.out.println("Multiple functions are available");
         System.out.println("\tPrimary");
         System.out.println("\t\tdownload [manifest]");
@@ -61,10 +61,10 @@ public class Main {
         System.out.println("\t\t" + launchCommand + " patch $workspace $patches $scriptOutput kernel_lge_mako");
         System.out.println("\tTo patch multiple kernels");
         System.out.println("\t\t" + launchCommand + " patch $workspace $patches $scriptOutput kernel_lge_mako kernel_google_msm");
+        System.out.println("\tTo generate a Linux kernel incremental patch downloader");
+        System.out.println("\t\t" + launchCommand + " linuxIncr 3.x 3.4. 110");
         System.out.println("\tTo sort a manifest");
         System.out.println("\t\t" + launchCommand + " sort /mnt/Android/Patches/Linux/Kernel_CVE_Patch_List.txt");
-        System.out.println("\tTo generate a Linux kernel incremental patch downloader");
-        System.out.println("\t\t" + launchCommand + " linuxIncr 3.x 3.0. 101");
         System.out.println("\tTo extract repos from an Android patch manifest");
         System.out.println("\t\t" + launchCommand + " extract /mnt/Android/Patches/Android/Android_CVEs.txt");
     }

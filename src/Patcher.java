@@ -10,14 +10,14 @@ public class Patcher {
     private static final int REPO_TYPE_KERNEL = 0;
     private static final int REPO_TYPE_ANDROID = 1;
 
-    private static String androidWorkspace = "/mnt/Drive-3/Build/LineageOS-14.1/";
-    private static String patchesPathRoot = "/mnt/Drive-3/Patches/";
+    private static String androidWorkspace = "";
+    private static String patchesPathRoot = "";
     private static final String patchesPathLinux = patchesPathRoot + "Linux/";
     private static final String patchesPathAndroid = patchesPathRoot + "Android/";
     private static final String patchesPathScriptLinux = "\\$cvePatchesLinux/";
     private static final String patchesPathScriptAndroid = "\\$cvePatchesAndroid/";
     private static final String scriptPrefix = "android_";
-    private static String scriptOutput = "/mnt/Drive-3/Scripts/LineageOS-14.1/CVE_Patchers/";
+    private static String scriptOutput = "";
 
 
     public static void patch(String[] args) {
