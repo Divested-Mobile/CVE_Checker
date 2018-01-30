@@ -12,8 +12,8 @@ public class Patcher {
 
     private static String androidWorkspace = "";
     private static String patchesPathRoot = "";
-    private static final String patchesPathLinux = patchesPathRoot + "Linux/";
-    private static final String patchesPathAndroid = patchesPathRoot + "Android/";
+    private static String patchesPathLinux = "";
+    private static String patchesPathAndroid = "";
     private static final String patchesPathScriptLinux = "\\$cvePatchesLinux/";
     private static final String patchesPathScriptAndroid = "\\$cvePatchesAndroid/";
     private static final String scriptPrefix = "android_";
@@ -21,9 +21,15 @@ public class Patcher {
 
 
     public static void patch(String[] args) {
-        androidWorkspace = args[1];
-        patchesPathRoot = args[2];
-        scriptOutput = args[3];
+        if(args.length >= 4) {
+            androidWorkspace = args[1];
+            patchesPathRoot = args[2];
+            scriptOutput = args[3];
+            patchesPathLinux = patchesPathRoot + "Linux/";
+            patchesPathAndroid = patchesPathRoot + "Android/";
+        } else {
+            System.out.println("Not enough args");
+        }
         if (args.length > 4) {
             int c = 0;
             for (String repo : args) {
