@@ -67,6 +67,8 @@ public class Patcher {
         return repoPath.exists();
     }
 
+    private static int wifiVersionSupported = -1;
+
     private static void checkAndGenerateScript(String repo, ArrayList<String> scriptCommands) {
         String repoPath = getRepoPath(repo);
         if (doesRepoExist(new File(repoPath))) {
@@ -97,9 +99,15 @@ public class Patcher {
                 ignoreMajor = true;
             }
 
-            boolean prima = new File(repoPath + "/drivers/staging/prima/").exists();
-            boolean qcacld2 = new File(repoPath + "/drivers/staging/qcacld-2.0/").exists();
-            boolean qcacld3 = new File(repoPath + "/drivers/staging/qcacld-3.0/").exists();
+            if(new File(repoPath + "/drivers/staging/prima/").exists()) {
+                wifiVersionSupported = 1;
+            }
+            if(new File(repoPath + "/drivers/staging/qcacld-2.0/").exists()) {
+                wifiVersionSupported = 2;
+            }
+            if(new File(repoPath + "/drivers/staging/qcacld-3.0/").exists()) {
+                wifiVersionSupported = 3;
+            }
 
             //The top-level directory contains all patchsets
             File[] patchSets = new File(patchesPath).listFiles(File::isDirectory);
@@ -125,7 +133,7 @@ public class Patcher {
                             versions.add(patchVersion);
                         }
                         if(repoType == REPO_TYPE_KERNEL) {
-                            if ((prima && patchVersion.equals("prima")) || (qcacld2 && patchVersion.equals("qcacld-2.0")) || (qcacld3 && patchVersion.equals("qcacld-3.0"))) {
+                            if ((wifiVersionSupported == 1 && patchVersion.equals("prima")) || (wifiVersionSupported == 2 && patchVersion.equals("qcacld-2.0")) || (wifiVersionSupported == 3 && patchVersion.equals("qcacld-3.0"))) {
                                 versions.add(patchVersion);
                             }
                         }
@@ -175,6 +183,7 @@ public class Patcher {
         } else {
             System.out.println("Invalid repo: " + repo);
         }
+        wifiVersionSupported = -1;
     }
 
     private static void writeScript(String repo, ArrayList<String> scriptCommands) {
@@ -219,12 +228,12 @@ public class Patcher {
 
     private static String doesPatchApply(String repoPath, String patch, boolean applyPatch, String alternateRoot, String patchesPath, String patchesPathScript) {
         String command = "git -C " + repoPath + " apply --check " + patch;
+        if (alternateRoot.length() > 0) {
+            command += " --directory=\"" + alternateRoot + "\"";
+        }
         try {
             if (runCommand(command) == 0) {
                 command = command.replaceAll(" --check", "");
-                if (alternateRoot.length() > 0) {
-                    command += " --directory=\"" + alternateRoot + "\"";
-                }
                 System.out.println("\t\tPatch can apply successfully: " + logPretty(command, repoPath));
                 if (applyPatch) {
                     if (runCommand(command) == 0) {
@@ -237,10 +246,10 @@ public class Patcher {
                 return command.replaceAll(" -C " + repoPath, "").replaceAll(patchesPath, patchesPathScript);
             } else {
                 System.out.println("\t\tPatch does not apply successfully: " + logPretty(command, repoPath));
-                if (isWifiPatch(patch)) {
-                    System.out.println("\t\t\tThis is a Wi-Fi patch, it might need to be applied directly! Currently unsupported");
-                    //TODO: GET THE VERSION
-                    //return doesPatchApply(kernelPath, patch, applyPatch, "drivers/staging/" + version);
+                if (isWifiPatch(patch) && alternateRoot.equals("")) {
+                    System.out.println("\t\t\tThis is a Wi-Fi patch, attempting to apply directly!");
+                    String altRoot = "drivers/staging/" + getWifiVersionString();
+                    return doesPatchApply(repoPath, patch, applyPatch, altRoot, patchesPath, patchesPathScript);
                 }
             }
         } catch (Exception e) {
@@ -332,6 +341,19 @@ public class Patcher {
 
     private static boolean isWifiPatch(String patch) {
         return patch.contains("/prima/") || patch.contains("/qcacld-");
+    }
+
+    private static String getWifiVersionString() {
+        switch(wifiVersionSupported) {
+            case 1:
+                return "prima";
+            case 2:
+                return "qcacld-2.0";
+            case 3:
+                return "qcacld-3.0";
+            default:
+                return "UNDEFINED";
+        }
     }
 
 }
