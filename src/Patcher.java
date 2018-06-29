@@ -30,8 +30,8 @@ public class Patcher {
     private static String patchesPathRoot = "";
     private static String patchesPathLinux = "";
     private static String patchesPathAndroid = "";
-    private static final String patchesPathScriptLinux = "\\$cvePatchesLinux/";
-    private static final String patchesPathScriptAndroid = "\\$cvePatchesAndroid/";
+    private static final String patchesPathScriptLinux = "\\$DOS_PATCHES_LINUX_CVES/";
+    private static final String patchesPathScriptAndroid = "\\$DOS_PATCHES_ANDROID_CVES/";
     private static final String scriptPrefix = "android_";
     private static String scriptOutput = "";
 
@@ -207,12 +207,12 @@ public class Patcher {
             String script = scriptOutput + scriptPrefix + repo + ".sh";
             PrintWriter out = new PrintWriter(script, "UTF-8");
             out.println("#!/bin/bash");
-            out.println("cd $base\"" + repo.replaceAll("_", "/") + "\"");
+            out.println("cd \"$DOS_BUILD_BASE\"\"" + repo.replaceAll("_", "/") + "\"");
             for (String command : scriptCommands) {
                 out.println(command);
             }
             out.println("editKernelLocalversion \"-dos.p" + scriptCommands.size() + "\"");
-            out.println("cd $base");
+            out.println("cd \"$DOS_BUILD_BASE\"");
             out.close();
         } catch (Exception e) {
             e.printStackTrace();
