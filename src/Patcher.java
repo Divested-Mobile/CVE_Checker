@@ -124,6 +124,9 @@ public class Patcher {
             if(new File(repoPath + "/drivers/staging/qcacld-3.0/").exists()) {
                 wifiVersionSupported = 3;
             }
+            if(new File(repoPath + "/drivers/staging/qca-wifi-host-cmn/").exists()) {
+                wifiVersionSupported = 4;
+            }
 
             //The top-level directory contains all patchsets
             File[] patchSets = new File(patchesPath).listFiles(File::isDirectory);
@@ -149,7 +152,10 @@ public class Patcher {
                             versions.add(patchVersion);
                         }
                         if(repoType == REPO_TYPE_KERNEL) {
-                            if ((wifiVersionSupported == 1 && patchVersion.equals("prima")) || (wifiVersionSupported == 2 && patchVersion.equals("qcacld-2.0")) || (wifiVersionSupported == 3 && patchVersion.equals("qcacld-3.0"))) {
+                            if ((wifiVersionSupported == 1 && patchVersion.equals("prima"))
+                                || (wifiVersionSupported == 2 && patchVersion.equals("qcacld-2.0"))
+                                || (wifiVersionSupported == 3 && patchVersion.equals("qcacld-3.0"))
+                                || (wifiVersionSupported == 4 && patchVersion.equals("qca-wifi-host-cmn"))) {
                                 versions.add(patchVersion);
                             }
                         }
@@ -356,7 +362,7 @@ public class Patcher {
     }
 
     private static boolean isWifiPatch(String patch) {
-        return patch.contains("/prima/") || patch.contains("/qcacld-");
+        return patch.contains("/prima/") || patch.contains("/qcacld-") || patch.contains("/qca-wifi-");
     }
 
     private static String getWifiVersionString() {
@@ -367,6 +373,8 @@ public class Patcher {
                 return "qcacld-2.0";
             case 3:
                 return "qcacld-3.0";
+            case 4:
+                return "qca-wifi-host-cmn";
             default:
                 return "UNDEFINED";
         }
