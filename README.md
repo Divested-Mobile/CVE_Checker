@@ -12,11 +12,11 @@ Notes on other patchers
 
 Similar Projects
 ----------------
-- https://github.com/Demon000/android-cve-checker
 - https://github.com/raymanfx/android-cve-checker
+- https://github.com/Demon000/android-cve-checker
 - https://github.com/tdm/vuln-patcher
 
 On Device Checkers
 ------------------
-- SnoopSnitch: Alive, but server side doesn't appear to be open source
+- SnoopSnitch: Alive, doesn't support checking kernels, and server side is not open source
 - Android VTS: Dead

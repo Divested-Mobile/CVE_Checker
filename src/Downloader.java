@@ -26,12 +26,12 @@ import java.util.Scanner;
 public class Downloader {
 
     private static ArrayList<CVE> cves = new ArrayList<CVE>();
-    private static final String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36";
+    private static final String userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0";
 
     public static void download(File manifest) {
         String output = "";
 
-        //Read in all the CVEs from the JSON file
+        //Read in all the CVEs from the manifest file
         try {
             System.out.println("Parsing...");
             File cveManifestReal = manifest;
