@@ -253,6 +253,9 @@ public class Patcher {
         if (alternateRoot.length() > 0) {
             command += " --directory=\"" + alternateRoot + "\"";
         }
+        if(patch.contains("0001-LinuxIncrementals")) {
+            command += " --exclude=Makefile";
+        }
         try {
             if (runCommand(command) == 0) {
                 command = command.replaceAll(" --check", "");
