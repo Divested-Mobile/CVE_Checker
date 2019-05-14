@@ -138,7 +138,9 @@ public class Downloader {
 
     private static String getPatchURL(Link link) {
         String url = link.getURL().replaceAll("http://", "https://");
-        if(url.contains("lkml.org/lkml/diff") || (url.contains("raw.githubusercontent") && url.endsWith(".patch"))) {
+        if(url.contains("lkml.org/lkml/diff")
+            || (url.contains("raw.githubusercontent") && url.endsWith(".patch"))
+            || (url.contains("marc.info") && url.endsWith("q=raw"))) {
             return url;
         } else if (url.contains("github.com")) {
             return url + ".patch";
