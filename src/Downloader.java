@@ -140,7 +140,8 @@ public class Downloader {
         String url = link.getURL().replaceAll("http://", "https://");
         if(url.contains("lkml.org/lkml/diff")
             || (url.contains("raw.githubusercontent") && url.endsWith(".patch"))
-            || (url.contains("marc.info") && url.endsWith("q=raw"))) {
+            || (url.contains("marc.info") && url.endsWith("q=raw"))
+            || (url.contains("lore.kernel.org") && url.endsWith("/raw"))) {
             return url;
         } else if (url.contains("github.com")) {
             return url + ".patch";
