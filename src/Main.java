@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2018 Divested Computing, Inc.
+Copyright (c) 2017-2018 Divested Computing Group
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ public class Main {
 
     private static void printHeader() {
         System.out.println("DivestOS Patch Downloader/Checker");
-        System.out.println("Copyright 2017-2018 Divested Computing, Inc.");
+        System.out.println("Copyright 2017-2018 Divested Computing Group");
         System.out.println("License: GPLv3");
         System.out.println("");
     }
