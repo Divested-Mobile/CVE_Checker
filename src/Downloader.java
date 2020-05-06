@@ -162,16 +162,14 @@ public class Downloader {
                 idS = 5;
             }
             String id = url.split("/")[idS];
-            //TODO: Dynamically get revision
-            return "https://review.lineageos.org/changes/" + id + "/revisions/1/patch?download"; //BASE64 ENCODED
+            return "https://review.lineageos.org/changes/" + id + "/revisions/current/patch?download"; //BASE64 ENCODED
         } else if (url.contains("android-review.googlesource.com") && !url.contains("topic") && !url.contains("#/q")) {
             int idS = 3;
             if (url.contains("#/c")) {
                 idS = 5;
             }
             String id = url.split("/")[idS];
-            //TODO: Dynamically get revision
-            return "https://android-review.googlesource.com/changes/" + id + "/revisions/1/patch?download"; //BASE64 ENCODED
+            return "https://android-review.googlesource.com/changes/" + id + "/revisions/current/patch?download"; //BASE64 ENCODED
         } else if (url.contains("patchwork")) {
             return (url + "/raw").replaceAll("//raw", "/raw");
         }
