@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2019 Divested Computing Group
+Copyright (c) 2017-2020 Divested Computing Group
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 public class Patcher {
@@ -129,9 +131,9 @@ public class Patcher {
             }
 
             //The top-level directory contains all patchsets
-            File[] patchSets = new File(patchesPath).listFiles(File::isDirectory);
-            if (patchSets != null && patchSets.length > 0) {
-                Arrays.sort(patchSets);
+            List<File> patchSets = Arrays.asList(new File(patchesPath).listFiles(File::isDirectory));
+            if (patchSets != null && patchSets.size() > 0) {
+                Collections.sort(patchSets, new AlphanumComparator());
 
                 //Iterate over all patchsets
                 for (File patchSet : patchSets) {

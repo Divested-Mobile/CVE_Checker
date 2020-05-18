@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017-2019 Divested Computing Group
+Copyright (c) 2017-2020 Divested Computing Group
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -31,9 +31,7 @@ public class Sorter {
             ArrayList<String> lines = new ArrayList<String>();
             while (s.hasNextLine()) {
                 String line = s.nextLine();
-                if (line.startsWith("#")) {
-
-                } else if (line.startsWith("CVE") || line.startsWith("LVT")) {
+                if (!line.startsWith("#") && (line.startsWith("CVE") || line.startsWith("LVT"))) {
                     if (curId.length() > 0) {
                         //System.out.println("Added a new CVE - " + curId);
                         cves.add(new CVE(curId, lines));
@@ -49,15 +47,7 @@ public class Sorter {
             e.printStackTrace();
         }
 
-        Collections.sort(cves, new Comparator<CVE>() {
-            @Override public int compare(CVE c1, CVE c2) {
-                String[] c1s = c1.getId().split("-");
-                Double c1d = Double.valueOf(c1s[1] + "." + c1s[2]);
-                String[] c2s = c2.getId().split("-");
-                Double c2d = Double.valueOf(c2s[1] + "." + c2s[2]);
-                return c1d.compareTo(c2d);
-            }
-        });
+        Collections.sort(cves, new AlphanumComparator());
         for (CVE cve : cves) {
             System.out.println(cve.getId());
             for (String line : cve.getLines()) {
@@ -81,6 +71,11 @@ public class Sorter {
 
         public ArrayList<String> getLines() {
             return lines;
+        }
+
+        @Override
+        public String toString() {
+		return getId();
         }
     }
 
