@@ -28,11 +28,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import java.io.File;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * This is an updated version with enhancements made by Daniel Migowski,
@@ -80,7 +76,8 @@ public class AlphanumComparator implements Comparator<Object>
         return chunk.toString();
     }
 
-    public int compare(Object s1o, Object s2o)
+    @Override
+	public int compare(Object s1o, Object s2o)
     {
     	String s1 = s1o.toString();
     	String s2 = s2o.toString();

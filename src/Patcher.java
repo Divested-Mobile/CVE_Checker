@@ -228,7 +228,8 @@ public class Patcher {
     }
 
     private static boolean isValidPatchName(String patch) {
-        return !patch.contains(".base64") && !patch.contains(".disabled") && !patch.contains(".dupe") && !patch.contains(".sh");
+    	return patch.endsWith(".patch") || patch.endsWith(".diff");
+        //return !patch.contains(".base64") && !patch.contains(".disabled") && !patch.contains(".dupe") && !patch.contains(".sh");
     }
 
     private static String logPretty(String string, String repoPath) {
@@ -261,6 +262,9 @@ public class Patcher {
         try {
             if (runCommand(command) == 0) {
                 command = command.replaceAll(" --check", "");
+                if(isGitPatch(patch)) {
+                	command = command.replaceAll(" apply ", " am ");
+                }
                 System.out.println("\t\tPatch can apply successfully: " + logPretty(command, repoPath));
                 if (applyPatch) {
                     if (runCommand(command) == 0) {
@@ -366,6 +370,20 @@ public class Patcher {
         return false;
     }
 
+    private static boolean isGitPatch(String patch) {
+    	try {
+    		Scanner file = new Scanner(new File(patch));
+    		String firstLine = file.nextLine();
+    		file.close();
+    		if(firstLine.contains("Mon Sep 17 00:00:00 2001")) {
+    			return true;
+    		}
+    	} catch(Exception e) {
+    		e.printStackTrace();
+    	}
+    	return false;
+    }
+    
     private static boolean isWifiPatch(String patch) {
         return patch.contains("/prima/") || patch.contains("/qcacld-") || patch.contains("/qca-wifi-");
     }
