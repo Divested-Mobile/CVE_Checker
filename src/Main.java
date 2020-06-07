@@ -53,7 +53,7 @@ public class Main {
 
     private static void printHeader() {
         System.out.println("DivestOS Patch Downloader/Checker");
-        System.out.println("Copyright 2017-2018 Divested Computing Group");
+        System.out.println("Copyright 2017-2020 Divested Computing Group");
         System.out.println("License: GPLv3");
         System.out.println("");
     }
@@ -71,9 +71,9 @@ public class Main {
         System.out.println("");
         System.out.println("Examples");
         System.out.println("\tTo download all patches in a Linux manifest to directory of manifest");
-        System.out.println("\t\t" + launchCommand + " download /mnt/Android/Patches/Linux/Kernel_CVE_Patch_List.txt");
-        System.out.println("\tTo download all patches in an Android manifest to directory of manifest");
-        System.out.println("\t\t" + launchCommand + " download /mnt/Android/Patches/Android/Android_CVEs.txt");
+        System.out.println("\t\t" + launchCommand + " download /mnt/dos/Patches/Linux/Kernel_CVE_Patch_List.txt");
+        System.out.println("\tTo download all patches in an AOSP manifest to directory of manifest");
+        System.out.println("\t\t" + launchCommand + " download /mnt/dos/Patches/AOSP/AOSP_CVEs.txt");
         System.out.println("\tTo patch kernels manually");
         System.out.println("\t\t" + launchCommand + " patch $workspace $patches $scriptOutput");
         System.out.println("\tTo patch a kernel");
@@ -83,9 +83,9 @@ public class Main {
         System.out.println("\tTo generate a Linux kernel incremental patch downloader");
         System.out.println("\t\t" + launchCommand + " linuxIncr 3.x 3.4. 110");
         System.out.println("\tTo sort a manifest");
-        System.out.println("\t\t" + launchCommand + " sort /mnt/Android/Patches/Linux/Kernel_CVE_Patch_List.txt");
-        System.out.println("\tTo extract repos from an Android patch manifest");
-        System.out.println("\t\t" + launchCommand + " extract /mnt/Android/Patches/Android/Android_CVEs.txt");
+        System.out.println("\t\t" + launchCommand + " sort /mnt/dos/Patches/Linux/Kernel_CVE_Patch_List.txt");
+        System.out.println("\tTo extract repos from an AOSP patch manifest");
+        System.out.println("\t\t" + launchCommand + " extract /mnt/dos/Patches/AOSP/AOSP_CVEs.txt");
         System.out.println("\tTo scrape CVE patches from an ASB");
         System.out.println("\t\t" + launchCommand + " scraper $ASB_HTTP_LINK");
     }

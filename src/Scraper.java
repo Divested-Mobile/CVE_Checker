@@ -1,3 +1,20 @@
+/*
+Copyright (c) 2020 Divested Computing Group
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -75,7 +92,7 @@ public class Scraper {
   public static ArrayList<String> getLinksFromLine(String line) {
     ArrayList<String> out = new ArrayList<>();
     Pattern link = Pattern.compile("<a[^>]+href=[\\\"']?([\\\"'>]+)[\\\"']?[^>]*>(.+?)<\\/a>",
-        Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Pattern.CASE_INSENSITIVE | Pattern.DOTALL); //Credit: https://stackoverflow.com/a/5120599
     Matcher matcher = link.matcher(line);
     while (matcher.find()) {
       out.add(matcher.group().split("href=\"")[1].split("\"")[0]);
