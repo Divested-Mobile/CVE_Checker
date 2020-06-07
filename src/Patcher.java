@@ -262,9 +262,9 @@ public class Patcher {
         try {
             if (runCommand(command) == 0) {
                 command = command.replaceAll(" --check", "");
-                if(isGitPatch(patch)) {
+                /*if(isGitPatch(patch)) {
                 	command = command.replaceAll(" apply ", " am ");
-                }
+                }*/
                 System.out.println("\t\tPatch can apply successfully: " + logPretty(command, repoPath));
                 if (applyPatch) {
                     if (runCommand(command) == 0) {

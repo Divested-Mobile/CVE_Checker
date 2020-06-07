@@ -19,9 +19,8 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args) {
-        printHeader();
-
         if(args.length == 0 || args[0].equals("-h") || args[0].equals("--help") || args[0].equals("/?")) {
+            printHeader();
             printHelp();
         }
 
@@ -45,6 +44,10 @@ public class Main {
             if (args[0].equals("extract") && args.length == 2) {
                 RepoExtractor.extract(new File(args[1]));
             }
+            
+            if (args[0].equals("scraper") && args.length == 2) {
+              Scraper.scrapeGASB(args[1]);
+          }
         }
     }
 
@@ -83,6 +86,8 @@ public class Main {
         System.out.println("\t\t" + launchCommand + " sort /mnt/Android/Patches/Linux/Kernel_CVE_Patch_List.txt");
         System.out.println("\tTo extract repos from an Android patch manifest");
         System.out.println("\t\t" + launchCommand + " extract /mnt/Android/Patches/Android/Android_CVEs.txt");
+        System.out.println("\tTo scrape CVE patches from an ASB");
+        System.out.println("\t\t" + launchCommand + " scraper $ASB_HTTP_LINK");
     }
 
 }

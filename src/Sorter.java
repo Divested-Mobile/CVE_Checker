@@ -48,6 +48,7 @@ public class Sorter {
 
         Collections.sort(cves, new AlphanumComparator());
         for (CVE cve : cves) {
+          if(cve.getLines().size() == 0) { continue; }
             System.out.println(cve.getId());
             for (String line : cve.getLines()) {
                 System.out.println(line);
