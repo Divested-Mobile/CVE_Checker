@@ -46,7 +46,7 @@ public class Main {
             }
             
             if (args[0].equals("scraper") && args.length == 2) {
-              Scraper.scrapeGASB(args[1]);
+              Scraper.scrape(args[1]);
           }
         }
     }
