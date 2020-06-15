@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ import java.util.regex.Pattern;
 public class Scraper {
 
   public static void main(String[] args) {
-    scrape("https://www.codeaurora.org/security-bulletin/2019/02/04/february-2019-code-aurora-security-bulletin");
+    scrape("");
   }
 
   public static void scrape(String link) {
