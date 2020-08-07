@@ -14,9 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +38,8 @@ public class Scraper {
         || link.startsWith("https://www.qualcomm.com/product-security/bulletins/")
         || link.startsWith("https://www.codeaurora.org/security-bulletin/")) {
       scrapeTable(link);
+    } else if (link.contains("cip-kernel-sec")) {
+      scrapeCIP(link);
     } else {
       System.out.println("Link unsupported");
     }
@@ -128,6 +134,68 @@ public class Scraper {
       return line + " - ";
     }
     return "";
+  }
+
+  public static void scrapeCIP(String path) {
+    final String linux =
+        "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=";
+    final String linuxStable =
+        "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/commit/?id=";
+
+    List<File> issues = Arrays.asList(new File(path + "/issues/").listFiles(File::isFile));
+    if (issues != null && issues.size() > 0) {
+      Collections.sort(issues, new AlphanumComparator());
+      for (File issue : issues) {
+        try {
+          System.out.println(issue.getName().replaceAll(".yml", ""));
+          Scanner cve = new Scanner(issue);
+          String line = "";
+          boolean searching = false;
+          while (cve.hasNextLine()) {
+            line = cve.nextLine();
+
+            if (line.contains("fixed-by:")) {
+              searching = true;
+            }
+            if (line.contains("ignore:")) {
+              searching = false;
+            }
+            if (searching && line.contains("never")) {
+              continue;
+            }
+            if (searching) {
+              while (line.endsWith(",")) {
+                line += cve.nextLine().replaceAll("    ", " ");
+              }
+              if (line.contains("mainline:")) {
+                final String commit = line.split("\\[")[1].split("\\]")[0];
+                if (commit.contains(", ")) {
+                  for (String commitS : commit.split(", ")) {
+                    System.out.println("\tLink - " + linux + commitS);
+                  }
+                } else {
+                  System.out.println("\tLink - " + linux + commit);
+                }
+              }
+              if (line.contains("stable/")) {
+                final String version = line.split("stable/")[1].split(":")[0];
+                final String commit = line.split("\\[")[1].split("\\]")[0];
+                if (commit.contains(", ")) {
+                  for (String commitS : commit.split(", ")) {
+                    System.out.println("\tLink - " + version + " - " + linuxStable + commitS);
+                  }
+                } else {
+                  System.out.println("\tLink - " + version + " - " + linuxStable + commit);
+                }
+              }
+            }
+          }
+          cve.close();
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
   }
 
 }
