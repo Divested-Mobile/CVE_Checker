@@ -184,7 +184,7 @@ public class Patcher {
                   if (isValidPatchName(patch.getName())) {
                     String command = doesPatchApply(repoPath, patch.getAbsolutePath(), true, "",
                         patchesPath, patchesPathScript);
-                    if (command != null) {
+                    if (command != null && !scriptCommands.contains(command)) {
                       scriptCommands.add(command);
                     }
                   }
