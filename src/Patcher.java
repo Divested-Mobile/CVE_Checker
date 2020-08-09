@@ -146,6 +146,7 @@ public class Patcher {
 
           // Get all available versions for a patchset
           File[] patchSetVersions = patchSet.listFiles(File::isDirectory);
+          Arrays.sort(patchSetVersions, new AlphanumComparator());
           ArrayList<String> versions = new ArrayList<>();
           // Check which versions are applicable
           for (File patchSetVersion : patchSetVersions) {
@@ -170,7 +171,7 @@ public class Patcher {
             File[] patches =
                 new File(patchSet.getAbsolutePath() + "/" + version + "/").listFiles(File::isFile);
             if (patches != null && patches.length > 0) {
-              Arrays.sort(patches);
+              Arrays.sort(patches, new AlphanumComparator());
 
               // Check the patches
               if (depends) {
