@@ -25,72 +25,82 @@ import java.util.Scanner;
 
 public class Patcher {
 
-  private static final int REPO_TYPE_KERNEL = 0;
-  private static final int REPO_TYPE_ANDROID = 1;
-
-  private static String androidWorkspace = "";
-  private static String patchesPathRoot = "";
-  private static String patchesPathLinux = "";
-  private static String patchesPathAndroid = "";
+  private static final int MODE_DIRECT = 0;
+  private static final int MODE_WORKSPACE = 1;
+  private static int MODE_CURRENT = -1;
+  private static File workspacePath = null;
   private static final String patchesPathScriptLinux = "\\$DOS_PATCHES_LINUX_CVES/";
-  private static final String patchesPathScriptAndroid = "\\$DOS_PATCHES_ANDROID_CVES/";
   private static final String scriptPrefix = "android_";
-  private static String scriptOutput = "";
-
 
   public static void patch(String[] args) {
-    if (args.length >= 4) {
-      androidWorkspace = args[1];
-      patchesPathRoot = args[2];
-      scriptOutput = args[3];
-      patchesPathLinux = patchesPathRoot + "Linux/";
-      patchesPathAndroid = patchesPathRoot + "Android/";
-    } else {
-      System.out.println("Not enough args");
-    }
-    if (args.length > 4) {
-      int c = 0;
-      for (String repo : args) {
-        if (c < 4) {
-          c++;
-          continue;
+      if (args.length == 1) {
+        System.out.println("Mode options are: direct and workspace");
+      } else {
+        if (args[1].equals("direct")) {
+          if (args.length >= 5) {
+            MODE_CURRENT = MODE_DIRECT;
+            File patchesPath = new File(ensureLeadingSlash(args[2]));
+            File outputDir = new File(ensureLeadingSlash(args[3]));
+  
+            int c = 0;
+            for (String repo : args) {
+              if (c < 4) {
+                c++;
+                continue;
+              }
+              File repoPath = new File(ensureLeadingSlash(args[c].split(":")[0]));
+              String repoName = args[c].split(":")[1];
+              checkAndGenerateScript(repoPath, repoName, patchesPath, outputDir, null);
+            }
+          } else {
+            System.out.println("Invalid args: patch direct $patchesPath $outputDir $repoPath:repoName...");
+          }
+        } else if (args[1].equals("workspace")) {
+          if (args.length >= 6) {
+            MODE_CURRENT = MODE_WORKSPACE;
+            workspacePath = new File(ensureLeadingSlash(args[2]));
+            File patchesPath = new File(ensureLeadingSlash(args[3]));
+            File outputDir = new File(ensureLeadingSlash(args[4]));
+            
+            int c = 0;
+            for (String repo : args) {
+              if (c < 5) {
+                c++;
+                continue;
+              }
+              String repoName = args[c];
+              File repoPath = getRepoPath(workspacePath, repoName);
+              System.out.println(repoPath);
+              checkAndGenerateScript(repoPath, repoName, patchesPath, outputDir, null);
+            }
+          } else {
+            System.out.println("Invalid args: patch workspace $workspace $patchesPath $outputDir repoName...");
+          }
         }
-        checkAndGenerateScript(repo, null);
       }
-    } else if (args.length == 4) {
-      System.out.println("No repos passed, accepting input from stdin");
-      Scanner s = new Scanner(System.in);
-      while (s.hasNextLine()) {
-        String line = s.nextLine();
-        if (line.length() > 0) {
-          checkAndGenerateScript(line, null);
-        }
-      }
+      
+  }
+  
+  private static String ensureLeadingSlash(String dir) {
+    if (!dir.endsWith("/")) {
+      dir += "/";
     }
+    return dir;
   }
 
-  private static int getRepoType(String repoPath) {
-    if (repoPath.contains("kernel")) {
-      return REPO_TYPE_KERNEL;
-    } else {
-      return REPO_TYPE_ANDROID;
-    }
+  private static File getRepoPath(File workspace, String repoName) {
+    return new File(ensureLeadingSlash(ensureLeadingSlash(workspace.toString()) + repoName.replaceAll("_", "/")));
   }
-
-  private static String getRepoPath(String repo) {
-    return androidWorkspace + repo.replaceAll("_", "/");
-  }
-
+  
   private static boolean doesRepoExist(File repoPath) {
     return repoPath.exists();
   }
 
   private static int wifiVersionSupported = -1;
 
-  private static void checkAndGenerateScript(String repo, ArrayList<String> scriptCommands) {
-    String repoPath = getRepoPath(repo);
-    if (doesRepoExist(new File(repoPath))) {
-      System.out.println("Starting on " + repo);
+  private static void checkAndGenerateScript(File repoPath, String repoName, File patchesPath, File outputDir, ArrayList<String> scriptCommands) {
+    if (doesRepoExist(repoPath)) {
+      System.out.println("Starting on " + repoName);
       boolean firstRun = true;
       int firstPass = 0;
       if (scriptCommands == null) {
@@ -100,23 +110,9 @@ public class Patcher {
         firstPass = scriptCommands.size();
       }
 
-      int repoType = getRepoType(repoPath);
-      Version repoVersion = null;
-      String patchesPath = "";
-      String patchesPathScript = "";
+      Version repoVersion = getKernelVersion(repoPath);
+      String patchesPathScript = patchesPathScriptLinux;
       boolean ignoreMajor = false;
-      if (repoType == REPO_TYPE_KERNEL) {
-        repoVersion = getKernelVersion(repoPath);
-        patchesPath = patchesPathLinux;
-        patchesPathScript = patchesPathScriptLinux;
-        ignoreMajor = false;
-      } else if (repoType == REPO_TYPE_ANDROID) {
-        repoVersion = getAndroidVersion(androidWorkspace);
-        patchesPath = patchesPathAndroid;
-        patchesPathScript = patchesPathScriptAndroid;
-        ignoreMajor = true;
-      }
-
       if (new File(repoPath + "/drivers/staging/prima/").exists()) {
         wifiVersionSupported = 1;
       }
@@ -131,7 +127,7 @@ public class Patcher {
       }
 
       // The top-level directory contains all patchsets
-      List<File> patchSets = Arrays.asList(new File(patchesPath).listFiles(File::isDirectory));
+      List<File> patchSets = Arrays.asList(patchesPath.listFiles(File::isDirectory));
       if (patchSets != null && patchSets.size() > 0) {
         Collections.sort(patchSets, new AlphanumComparator());
 
@@ -154,13 +150,11 @@ public class Patcher {
             if (isVersionInRange(repoVersion, patchVersion, ignoreMajor)) {
               versions.add(patchVersion);
             }
-            if (repoType == REPO_TYPE_KERNEL) {
-              if ((wifiVersionSupported == 1 && patchVersion.equals("prima"))
-                  || (wifiVersionSupported == 2 && patchVersion.equals("qcacld-2.0"))
-                  || (wifiVersionSupported == 3 && patchVersion.equals("qcacld-3.0"))
-                  || (wifiVersionSupported == 4 && patchVersion.equals("qca-wifi-host-cmn"))) {
-                versions.add(patchVersion);
-              }
+            if ((wifiVersionSupported == 1 && patchVersion.equals("prima"))
+                || (wifiVersionSupported == 2 && patchVersion.equals("qcacld-2.0"))
+                || (wifiVersionSupported == 3 && patchVersion.equals("qcacld-3.0"))
+                || (wifiVersionSupported == 4 && patchVersion.equals("qca-wifi-host-cmn"))) {
+              versions.add(patchVersion);
             }
           }
 
@@ -176,15 +170,15 @@ public class Patcher {
               // Check the patches
               if (depends) {
                 ArrayList<String> commands =
-                    doesPatchSetApply(repoPath, patches, true, patchesPath, patchesPathScript);
+                    doesPatchSetApply(repoPath, patchesPath, patches, true, patchesPathScript);
                 if (commands != null) {
                   scriptCommands.addAll(commands);
                 }
               } else {
                 for (File patch : patches) {
                   if (isValidPatchName(patch.getName())) {
-                    String command = doesPatchApply(repoPath, patch.getAbsolutePath(), true, "",
-                        patchesPath, patchesPathScript);
+                    String command = doesPatchApply(repoPath, patchesPath, patch.getAbsolutePath(), true, "",
+                        patchesPathScript);
                     if (command != null && !scriptCommands.contains(command)) {
                       scriptCommands.add(command);
                     }
@@ -201,31 +195,40 @@ public class Patcher {
       if (scriptCommands.size() > 0) {
         if (firstRun) {
           System.out.println("\tPerforming second pass to check for unmarked dependents");
-          checkAndGenerateScript(repo, scriptCommands);
+          checkAndGenerateScript(repoPath, repoName, patchesPath, outputDir, scriptCommands);
         } else {
-          System.out.println("\tAttempted to check all patches against " + repo);
+          System.out.println("\tAttempted to check all patches against " + repoName);
           System.out.println("\tApplied " + scriptCommands.size() + " patch(es) - 1st Pass: "
               + firstPass + ", 2nd Pass: " + (scriptCommands.size() - firstPass));
-          writeScript(repo, scriptCommands);
+          writeScript(repoName, outputDir, scriptCommands);
         }
       }
     } else {
-      System.out.println("Invalid repo: " + repo);
+      System.out.println("Invalid repo: " + repoName);
     }
     wifiVersionSupported = -1;
   }
 
-  private static void writeScript(String repo, ArrayList<String> scriptCommands) {
+  private static void writeScript(String repoName, File outputDir, ArrayList<String> scriptCommands) {
     try {
-      String script = scriptOutput + scriptPrefix + repo + ".sh";
+      String script = "";
+      if (MODE_CURRENT == MODE_WORKSPACE) {
+        script = outputDir + "/" + scriptPrefix + repoName + ".sh";
+      } else if (MODE_CURRENT == MODE_DIRECT) {
+        script = outputDir + "/" + repoName + ".sh";
+      }
       PrintWriter out = new PrintWriter(script, "UTF-8");
       out.println("#!/bin/bash");
-      out.println("cd \"$DOS_BUILD_BASE\"\"" + repo.replaceAll("_", "/") + "\"");
+      if (MODE_CURRENT == MODE_WORKSPACE) {
+        out.println("cd \"$DOS_BUILD_BASE\"\"" + repoName.replaceAll("_", "/") + "\"");
+      }
       for (String command : scriptCommands) {
         out.println(command);
       }
-      out.println("editKernelLocalversion \"-dos.p" + scriptCommands.size() + "\"");
-      out.println("cd \"$DOS_BUILD_BASE\"");
+      if (MODE_CURRENT == MODE_WORKSPACE) {
+        out.println("editKernelLocalversion \"-dos.p" + scriptCommands.size() + "\"");
+        out.println("cd \"$DOS_BUILD_BASE\"");
+      }
       out.close();
     } catch (Exception e) {
       e.printStackTrace();
@@ -238,9 +241,9 @@ public class Patcher {
     // && !patch.contains(".sh");
   }
 
-  private static String logPretty(String string, String repoPath) {
-    string = string.replaceAll(repoPath, "\\$repoPath");
-    string = string.replaceAll(patchesPathRoot, "\\$patchesPathRoot/");
+  private static String logPretty(String string, File repoPath, File patchesPath) {
+    string = string.replaceAll(repoPath.toString(), "\\$repoPath");
+    string = string.replaceAll(patchesPath.toString(), "\\$patchesPathRoot/");
     return string;
   }
 
@@ -257,8 +260,8 @@ public class Patcher {
     return -1;
   }
 
-  private static String doesPatchApply(String repoPath, String patch, boolean applyPatch,
-      String alternateRoot, String patchesPath, String patchesPathScript) {
+  private static String doesPatchApply(File repoPath, File patchesPath, String patch, boolean applyPatch,
+      String alternateRoot, String patchesPathScript) {
     String command = "git -C " + repoPath + " apply --check " + patch;
     if (alternateRoot.length() > 0) {
       command += " --directory=\"" + alternateRoot + "\"";
@@ -274,25 +277,24 @@ public class Patcher {
          * command = command.replaceAll(" apply ", " am ");
          * }
          */
-        System.out.println("\t\tPatch can apply successfully: " + logPretty(command, repoPath));
+        System.out.println("\t\tPatch can apply successfully: " + logPretty(command, repoPath, patchesPath));
         if (applyPatch) {
           if (runCommand(command) == 0) {
-            System.out.println("\t\t\tPatch applied successfully: " + logPretty(command, repoPath));
+            System.out.println("\t\t\tPatch applied successfully: " + logPretty(command, repoPath, patchesPath));
           } else {
             System.out.println("\t\t\tPatched failed to apply after being checked! "
-                + logPretty(command, repoPath));
+                + logPretty(command, repoPath, patchesPath));
             System.exit(1);
           }
         }
-        return command.replaceAll(" -C " + repoPath, "").replaceAll(patchesPath, patchesPathScript);
+        return command.replaceAll(" -C " + repoPath, "").replaceAll(ensureLeadingSlash(patchesPath.toString()), patchesPathScript);
       } else {
         System.out
-            .println("\t\tPatch does not apply successfully: " + logPretty(command, repoPath));
+            .println("\t\tPatch does not apply successfully: " + logPretty(command, repoPath, patchesPath));
         if (isWifiPatch(patch) && alternateRoot.equals("")) {
           System.out.println("\t\t\tThis is a Wi-Fi patch, attempting to apply directly!");
           String altRoot = "drivers/staging/" + getWifiVersionString();
-          return doesPatchApply(repoPath, patch, applyPatch, altRoot, patchesPath,
-              patchesPathScript);
+          return doesPatchApply(repoPath, patchesPath, patch, applyPatch, altRoot, patchesPathScript);
         }
       }
     } catch (Exception e) {
@@ -301,14 +303,13 @@ public class Patcher {
     return null;
   }
 
-  private static ArrayList<String> doesPatchSetApply(String repoPath, File[] patchset,
-      boolean applyPatches, String patchesPath, String patchesPathScript) {
+  private static ArrayList<String> doesPatchSetApply(File repoPath, File patchesPath, File[] patchset,
+      boolean applyPatches, String patchesPathScript) {
     System.out.println("\t\tChecking dependent patchset");
     ArrayList<String> commands = new ArrayList<>();
     for (File patch : patchset) {
       if (isValidPatchName(patch.getName())) {
-        String command = doesPatchApply(repoPath, patch.getAbsolutePath(), applyPatches, "",
-            patchesPath, patchesPathScript);
+        String command = doesPatchApply(repoPath, patchesPath, patch.getAbsolutePath(), applyPatches, "", patchesPathScript);
         if (command != null) {
           commands.add(command);
         } else {
@@ -319,7 +320,7 @@ public class Patcher {
     return commands;
   }
 
-  private static Version getKernelVersion(String kernelPath) {
+  private static Version getKernelVersion(File kernelPath) {
     String kernelVersion = "";
     try {
       Scanner kernelMakefile = new Scanner(new File(kernelPath + "/Makefile"));
@@ -341,27 +342,6 @@ public class Patcher {
       e.printStackTrace();
     }
     return new Version(kernelVersion);
-  }
-
-  private static Version getAndroidVersion(String androidPath) {
-    String androidVersion = "";
-    try {
-      Scanner repoManifest = new Scanner(new File(androidPath + "/.repo/manifests/default.xml"));
-      while (repoManifest.hasNextLine()) {
-        String line = repoManifest.nextLine();
-        if (line.contains("revision") && line.contains("android")) { // revision="refs/tags/android-7.1.2_r29"
-          String versionTmp = line.trim().split("\"")[1]; // refs/tags/android-7.1.2_r29
-          versionTmp = versionTmp.replaceAll("refs/tags/android-", ""); // 7.1.2_r29
-          versionTmp = versionTmp.split("_")[0]; // 7.1.2
-          androidVersion = versionTmp;
-          break;
-        }
-      }
-      System.out.println("Detected Android version " + androidVersion);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return new Version(androidVersion);
   }
 
   private static boolean isVersionInRange(Version repo, String patch, boolean ignoreMajor) {

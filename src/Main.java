@@ -30,7 +30,7 @@ public class Main {
         Downloader.download(new File(args[1]));
       }
 
-      if (args[0].equals("patch") && args.length >= 4) {
+      if (args[0].equals("patch") && args.length >= 1) {
         Patcher.patch(args);
       }
 
@@ -40,10 +40,6 @@ public class Main {
 
       if (args[0].equals("linuxIncr") && args.length == 4) {
         LinuxIncrs.generateScript(args[1], args[2], Integer.valueOf(args[3]));
-      }
-
-      if (args[0].equals("extract") && args.length == 2) {
-        RepoExtractor.extract(new File(args[1]));
       }
 
       if (args[0].equals("scraper") && args.length == 2) {
@@ -62,35 +58,33 @@ public class Main {
   private static void printHelp() {
     String launchCommand = "java -jar patcher.jar";
     System.out.println("Multiple functions are available");
+    
     System.out.println("\tPrimary");
     System.out.println("\t\tdownload [manifest]");
-    System.out.println("\t\tpatch [workspace] [patches] [scriptOutput] {repo(s)}");
+    System.out.println("\t\tpatch (see examples below)");
+    
     System.out.println("\tSecondary");
     System.out.println("\t\tlinuxIncr [version] [patchLevel] [mostRecentSubLevel]");
     System.out.println("\t\tsort [manifest]");
-    System.out.println("\t\textract [manifest]");
+    System.out.println("\t\tscraper [http link]");
     System.out.println("");
+    
     System.out.println("Examples");
-    System.out.println("\tTo download all patches in a Linux manifest to directory of manifest");
-    System.out.println(
-        "\t\t" + launchCommand + " download /mnt/dos/Patches/Linux/Kernel_CVE_Patch_List.txt");
-    System.out.println("\tTo download all patches in an AOSP manifest to directory of manifest");
-    System.out.println("\t\t" + launchCommand + " download /mnt/dos/Patches/AOSP/AOSP_CVEs.txt");
-    System.out.println("\tTo patch kernels manually");
-    System.out.println("\t\t" + launchCommand + " patch $workspace $patches $scriptOutput");
-    System.out.println("\tTo patch a kernel");
-    System.out.println(
-        "\t\t" + launchCommand + " patch $workspace $patches $scriptOutput kernel_lge_mako");
-    System.out.println("\tTo patch multiple kernels");
-    System.out.println("\t\t" + launchCommand
-        + " patch $workspace $patches $scriptOutput kernel_lge_mako kernel_google_msm");
+    System.out.println("\tTo download all patches in a manifest to directory of manifest");
+    System.out.println("\t\t" + launchCommand + " download /mnt/dos/Patches/Linux/Kernel_CVE_Patch_List.txt");
+    
+    System.out.println("\tTo patch a kernel directly");
+    System.out.println("\t\t" + launchCommand + " patch direct $patchesPath/ $outputDir/ $repoPath:repoName...");
+    
+    System.out.println("\tTo patch a kernel in workspace");
+    System.out.println("\t\t" + launchCommand + " patch workspace $workspace/ $patchesPath/ $outputDir/ repoName...");
+    
     System.out.println("\tTo generate a Linux kernel incremental patch downloader");
     System.out.println("\t\t" + launchCommand + " linuxIncr 3.x 3.4. 110");
+    
     System.out.println("\tTo sort a manifest");
-    System.out
-        .println("\t\t" + launchCommand + " sort /mnt/dos/Patches/Linux/Kernel_CVE_Patch_List.txt");
-    System.out.println("\tTo extract repos from an AOSP patch manifest");
-    System.out.println("\t\t" + launchCommand + " extract /mnt/dos/Patches/AOSP/AOSP_CVEs.txt");
+    System.out.println("\t\t" + launchCommand + " sort /mnt/dos/Patches/Linux/Kernel_CVE_Patch_List.txt");
+    
     System.out.println("\tTo scrape CVE patches from an ASB");
     System.out.println("\t\t" + launchCommand + " scraper $ASB_HTTP_LINK");
   }

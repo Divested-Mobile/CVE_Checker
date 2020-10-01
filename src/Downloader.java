@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2019 Divested Computing Group
+ * Copyright (c) 2017-2020 Divested Computing Group
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ public class Downloader {
 
   private static ArrayList<CVE> cves = new ArrayList<CVE>();
   private static final String userAgent =
-      "Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0";
+      "Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0";
 
   public static void download(File manifest) {
     String output = "";
