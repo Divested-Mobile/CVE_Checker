@@ -71,7 +71,6 @@ public class Patcher {
             }
             String repoName = args[c];
             File repoPath = getRepoPath(workspacePath, repoName);
-            System.out.println(repoPath);
             checkAndGenerateScript(repoPath, repoName, patchesPath, outputDir, null);
           }
         } else {
