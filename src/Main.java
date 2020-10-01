@@ -58,33 +58,37 @@ public class Main {
   private static void printHelp() {
     String launchCommand = "java -jar patcher.jar";
     System.out.println("Multiple functions are available");
-    
+
     System.out.println("\tPrimary");
     System.out.println("\t\tdownload [manifest]");
     System.out.println("\t\tpatch (see examples below)");
-    
+
     System.out.println("\tSecondary");
     System.out.println("\t\tlinuxIncr [version] [patchLevel] [mostRecentSubLevel]");
     System.out.println("\t\tsort [manifest]");
     System.out.println("\t\tscraper [http link]");
     System.out.println("");
-    
+
     System.out.println("Examples");
     System.out.println("\tTo download all patches in a manifest to directory of manifest");
-    System.out.println("\t\t" + launchCommand + " download /mnt/dos/Patches/Linux/Kernel_CVE_Patch_List.txt");
-    
+    System.out.println(
+        "\t\t" + launchCommand + " download /mnt/dos/Patches/Linux/Kernel_CVE_Patch_List.txt");
+
     System.out.println("\tTo patch a kernel directly");
-    System.out.println("\t\t" + launchCommand + " patch direct $patchesPath/ $outputDir/ $repoPath:repoName...");
-    
+    System.out.println(
+        "\t\t" + launchCommand + " patch direct $patchesPath/ $outputDir/ $repoPath:repoName...");
+
     System.out.println("\tTo patch a kernel in workspace");
-    System.out.println("\t\t" + launchCommand + " patch workspace $workspace/ $patchesPath/ $outputDir/ repoName...");
-    
+    System.out.println("\t\t" + launchCommand
+        + " patch workspace $workspace/ $patchesPath/ $outputDir/ repoName...");
+
     System.out.println("\tTo generate a Linux kernel incremental patch downloader");
     System.out.println("\t\t" + launchCommand + " linuxIncr 3.x 3.4. 110");
-    
+
     System.out.println("\tTo sort a manifest");
-    System.out.println("\t\t" + launchCommand + " sort /mnt/dos/Patches/Linux/Kernel_CVE_Patch_List.txt");
-    
+    System.out
+        .println("\t\t" + launchCommand + " sort /mnt/dos/Patches/Linux/Kernel_CVE_Patch_List.txt");
+
     System.out.println("\tTo scrape CVE patches from an ASB");
     System.out.println("\t\t" + launchCommand + " scraper $ASB_HTTP_LINK");
   }
