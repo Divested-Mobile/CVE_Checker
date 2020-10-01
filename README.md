@@ -3,6 +3,18 @@ DivestOS CVE Patcher
 
 A tool for downloading, checking, and applying (CVE) patches to a (kernel) repository.
 
+A Note on CVE Patching
+----------------------
+- Patches applied may not be relevant to a device's architecture or hardware
+- Patches can make issues worse
+- Backported patches do not receive much review
+- CVE patches may not compeletely mitigate the issue
+- There are many security patches that do not receive CVEs
+- Linux has many known security issues that go unresolved for years
+- This is not a long-term solution
+- We need more rigrious support lifecycles from upstreams
+- This project is soley made to attempt to improve the security and by extension the lifespan of unsupported devices
+
 Credits
 -------
 - Thanks to @z3ntu for Gradle build support
@@ -21,13 +33,13 @@ Adding Patches
 Importing CIP Patches
 ---------------------
 - Run: ./CIP.sh $PATH_TO_CIP_REPO
-- Then run: git diff CIP.txt
+- Run: git diff CIP.txt
 - Manually import the new patches into Kernel_CVE_Patch_List.txt
 
 Importing Linux incrementals
 ----------------------------
 - Open kernel.org in a browser
-- cd 0001-LinuxIncrementals/4.4
+- Run: cd 0001-LinuxIncrementals/4.4
 - Run: java -jar $DOS_BINARY_PATCHER linuxIncr 4.x 4.4. 238 > download.sh
 - Run: git diff download.sh
 - Manually run the commands shown in the diff to download the new ones
@@ -35,7 +47,7 @@ Importing Linux incrementals
 Downloading Patches
 -------------------
 - If updating an existing patchset, rm -rf it first
-- Then: java -jar patcher.jar download $DOS_PATCHES_LINUX_CVES/Kernel_CVE_Patch_List.txt
+- Run: java -jar patcher.jar download $DOS_PATCHES_LINUX_CVES/Kernel_CVE_Patch_List.txt
 
 Downloading Entire Repository
 -----------------------------
@@ -59,9 +71,26 @@ Identifying Failed Patches
 --------------------------
 - During compile-time there is an obvious chance it will fail
 - Take the error
-- cd into $DOS_PATCHES_LINUX_CVES
-- Use rg -l $snippet_of_error
+- Run: cd $DOS_PATCHES_LINUX_CVES
+- Run: rg -l $snippet_of_error
 - Check to see if any of those patches were applied
 - Then look at each applied patch to narrow it down
 - Once you find it, you'll want to mark that somewhere. DivestOS has a Fix_CVE_Patchers.sh for tracking/disabling them
 - Generally if it compiles, it boots. However there are patches that can compile and absolutely break boot, see: CVE-2017-13218/4.4/0026.patch
+
+Relevant Links
+--------------
+- https://gitlab.com/cip-project/cip-kernel/cip-kernel-sec
+- https://github.com/android-linux-stable
+- https://www.youtube.com/watch?v=F_Kza6fdkSU
+- https://github.com/raymanfx/android-cve-checker
+- https://github.com/tdm/vuln-patcher
+
+Implementation Discussions
+--------------------------
+- https://github.com/hashbang/os/issues/43
+- https://gitlab.com/postmarketOS/pmbootstrap/-/issues/1746
+- https://github.com/ubports/ubuntu-touch/issues/1566
+- https://gitlab.com/calyxos/calyxos/-/issues/205
+- https://gitlab.com/LineageOS/issues/devrel/-/issues/235
+- https://github.com/GrapheneOS-Archive/kernel_google_marlin/pull/1
