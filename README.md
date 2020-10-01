@@ -24,6 +24,14 @@ Importing CIP Patches
 - Then run: git diff CIP.txt
 - Manually import the new patches into Kernel_CVE_Patch_List.txt
 
+Importing Linux incrementals
+----------------------------
+- Open kernel.org in a browser
+- cd 0001-LinuxIncrementals/4.4
+- Run: java -jar $DOS_BINARY_PATCHER linuxIncr 4.x 4.4. 238 > download.sh
+- Run: git diff download.sh
+- Manually run the commands shown in the diff to download the new ones
+
 Downloading Patches
 -------------------
 - If updating an existing patchset, rm -rf it first
