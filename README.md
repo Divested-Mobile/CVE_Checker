@@ -1,7 +1,7 @@
 DivestOS CVE Patcher
 ====================
 
-A tool for downloading, checking, and applying (CVE) patches to a repository.
+A tool for downloading, checking, and applying (CVE) patches to a (kernel) repository.
 
 
 Credits
@@ -11,7 +11,7 @@ Credits
 
 Quick Start
 -----------
-- Clone this repo, cd into it, run to compile the tool: gradle jar
+- Clone this repo, cd into it, and compile the tool: gradle jar
 - Put the resulting jar into your .bashrc: $DOS_BINARY_PATCHER
 - Clone the patches repo, put it into your .bashrc: $DOS_PATCHES_LINUX_CVES
 
@@ -29,3 +29,15 @@ Importing CIP Patches
 - Run: ./CIP.sh $PATH_TO_CIP_REPO
 - Then run: git diff CIP.txt
 - Manually import the new patches into Kernel_CVE_Patch_List.txt
+
+Downloading Patches
+-------------------
+- If updating an existing patchset, rm -rf it first
+- Then: java -jar patcher.jar download $DOS_PATCHES_LINUX_CVES/Kernel_CVE_Patch_List.txt
+
+Downloading Entire Repository
+-----------------------------
+- This will take 1-2 hours
+- You will likely be rate-limited
+- Some patches will be missing as the links may no longer be valid
+- There are a handful of patches that have been added by hand (eg. compressed, or manually backported)
