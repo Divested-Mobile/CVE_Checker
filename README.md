@@ -3,12 +3,12 @@ DivestOS CVE Patcher
 
 A tool for downloading, checking, and applying (CVE) patches to a (kernel) repository.
 
-A Note on CVE Patching
+Notes on CVE Patching
 ----------------------
 - Patches applied may not be relevant to a device's architecture or hardware
-- Patches can make issues worse
+- Patches can make issues worse, or create new issues
 - Backported patches do not receive much review
-- CVE patches may not compeletely mitigate the issue
+- Patches may not compeletely mitigate the issue they intend to
 - There are many security patches that do not receive CVEs
 - Linux has many known security issues that go unresolved for years
 - This is not a long-term solution
@@ -59,7 +59,7 @@ Downloading Entire Repository
 Patching
 --------
 - To patch a kernel directly: java -jar $DOS_BINARY_PATCHER patch direct $DOS_PATCHES_LINUX_CVES $outputDir/ $repoPath/:repoName...
-- To patch a kernel in an AOSP workspace: java -jar $DOS_BINARY_PATCHER patch workspace $workspace/ $DOS_PATCHES_LINUX_CVES $outputDir/ repoName...
+- To patch a kernel in an AOSP workspace: java -jar $DOS_BINARY_PATCHER patch workspace $workspace/ $DOS_PATCHES_LINUX_CVES $outputDir/ $repoName...
 
 Using the Resulting Scripts
 ---------------------------

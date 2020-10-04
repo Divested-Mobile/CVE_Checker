@@ -48,8 +48,8 @@ public class Patcher {
               c++;
               continue;
             }
-            File repoPath = new File(ensureLeadingSlash(args[c].split(":")[0]));
-            String repoName = args[c].split(":")[1];
+            File repoPath = new File(ensureLeadingSlash(repo.split(":")[0]));
+            String repoName = repo.split(":")[1];
             checkAndGenerateScript(repoPath, repoName, patchesPath, outputDir, null);
           }
         } else {
@@ -69,7 +69,7 @@ public class Patcher {
               c++;
               continue;
             }
-            String repoName = args[c];
+            String repoName = repo;
             File repoPath = getRepoPath(workspacePath, repoName);
             checkAndGenerateScript(repoPath, repoName, patchesPath, outputDir, null);
           }
