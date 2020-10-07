@@ -38,8 +38,12 @@ public class Main {
         Sorter.sort(new File(args[1]));
       }
 
-      if (args[0].equals("linuxIncr") && args.length == 4) {
-        LinuxIncrs.generateScript(args[1], args[2], Integer.valueOf(args[3]));
+      if (args[0].equals("linuxIncrGen") && args.length == 3) {
+        LinuxIncrsGen.generateScript(args[1], Integer.valueOf(args[2]));
+      }
+
+      if (args[0].equals("linuxIncrDownload") && args.length == 4) {
+        LinuxIncrsDownload.generateScript(args[1], args[2], Integer.valueOf(args[3]));
       }
 
       if (args[0].equals("scraper") && args.length == 2) {
@@ -82,8 +86,11 @@ public class Main {
     System.out.println("\t\t" + launchCommand
         + " patch workspace $workspace/ $patchesPath/ $outputDir/ repoName...");
 
+    System.out.println("\tTo generate a Linux kernel incremental patch generator");
+    System.out.println("\t\t" + launchCommand + " linuxIncrGen 3.4 110");
+
     System.out.println("\tTo generate a Linux kernel incremental patch downloader");
-    System.out.println("\t\t" + launchCommand + " linuxIncr 3.x 3.4. 110");
+    System.out.println("\t\t" + launchCommand + " linuxIncrDownload 3.x 3.4. 110");
 
     System.out.println("\tTo sort a manifest");
     System.out
