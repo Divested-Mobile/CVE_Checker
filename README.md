@@ -36,7 +36,7 @@ Importing CIP Patches
 - Run: git diff CIP.txt
 - Manually import the new patches into Kernel_CVE_Patch_List.txt
 
-Importing Linux incrementals diffs
+Importing Linux incremental diffs
 ----------------------------------
 - Open kernel.org in a browser
 - Run: cd 0001-LinuxIncrementals/4.4
@@ -44,7 +44,7 @@ Importing Linux incrementals diffs
 - Run: git diff download.sh
 - Manually run the commands shown in the diff to download the new ones
 
-Importing Linux incrementals patches
+Importing Linux incremental patches
 ------------------------------------
 - Open kernel.org in a browser
 - Run: cd 0001-LinuxIncrementals/4.4
@@ -85,7 +85,7 @@ Identifying Failed Patches
 - Check to see if any of those patches were applied
 - Then look at each applied patch to narrow it down
 - Once you find it, you'll want to mark that somewhere. DivestOS has a Fix_CVE_Patchers.sh for tracking/disabling them
-- Generally if it compiles, it boots. However there are patches that can compile and absolutely break boot, see: CVE-2017-13218/4.4/0026.patch
+- Generally if it compiles, it boots. However there are patches that can compile and absolutely break boot, see: CVE-2017-13218/4.4/0027.patch
 
 Relevant Links
 --------------

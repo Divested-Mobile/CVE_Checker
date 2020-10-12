@@ -141,6 +141,8 @@ public class Scraper {
         "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=";
     final String linuxStable =
         "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=";
+    final String aospStable =
+        "https://android.googlesource.com/kernel/common/+/";
 
     List<File> issues = Arrays.asList(new File(path + "/issues/").listFiles(File::isFile));
     if (issues != null && issues.size() > 0) {
@@ -186,6 +188,17 @@ public class Scraper {
                   }
                 } else {
                   System.out.println("\tLink - " + version + " - " + linuxStable + commit);
+                }
+              }
+              if (line.contains("aosp/")) {
+                final String version = line.split("aosp/")[1].split(":")[0];
+                final String commit = line.split("\\[")[1].split("\\]")[0];
+                if (commit.contains(", ")) {
+                  for (String commitS : commit.split(", ")) {
+                    System.out.println("\tLink - " + version + " - " + aospStable + commitS);
+                  }
+                } else {
+                  System.out.println("\tLink - " + version + " - " + aospStable + commit);
                 }
               }
             }
