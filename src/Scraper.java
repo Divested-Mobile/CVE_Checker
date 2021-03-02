@@ -115,7 +115,7 @@ public class Scraper {
   public static ArrayList<String> getLinksFromLine(String line) {
     ArrayList<String> out = new ArrayList<>();
     Pattern link = Pattern.compile("<a[^>]+href=[\\\"']?([\\\"'>]+)[\\\"']?[^>]*>(.+?)<\\/a>",
-        Pattern.CASE_INSENSITIVE | Pattern.DOTALL); // Credit: https://stackoverflow.com/a/5120599
+        Pattern.CASE_INSENSITIVE | Pattern.DOTALL); // Credit (CC BY-SA 3.0): https://stackoverflow.com/a/5120599
     Matcher matcher = link.matcher(line);
     while (matcher.find()) {
       out.add(matcher.group().split("href=\"")[1].split("\"")[0]);
