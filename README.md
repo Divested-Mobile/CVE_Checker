@@ -18,7 +18,7 @@ Notes on CVE Patching
 Credits
 -------
 - Thanks to @z3ntu for Gradle build support
-- David Koelle for AlphanumComparator, http://www.davekoelle.com/alphanum.html
+- David Koelle for AlphanumComparator (MIT), http://www.davekoelle.com/alphanum.html
 
 Quick Start
 -----------
