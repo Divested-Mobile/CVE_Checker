@@ -15,6 +15,17 @@ Notes on CVE Patching
 - We need more rigrious support lifecycles from upstreams
 - This project is soley made to attempt to improve the security and by extension the lifespan of unsupported devices
 
+Real World Use
+--------------
+- This project was considered viable by end of 2017 and has been in use since then for DivestOS.
+- The corresponding CVE database is likely one of the largest with support for older kernels.
+- It is currently used for improving the security of the 80+ devices supported by DivestOS, and is tested booting on 30+ of them.
+- It is often near impossible to provide viable mainline support for many vendor altered kernel trees. We believe this project at the very least improves their sitatuion. To ignore this is to be a defeatist. Not everyone can afford the latest shiny thing.
+
+Patch Database
+--------------
+- https://github.com/Divested-Mobile/Kernel_Patches or https://gitlab.com/divested-mobile/kernel_patches
+
 Credits
 -------
 - Thanks to @z3ntu for Gradle build support
@@ -100,6 +111,7 @@ Implementation Discussions
 - https://github.com/hashbang/os/issues/43
 - https://gitlab.com/postmarketOS/pmbootstrap/-/issues/1746
 - https://github.com/ubports/ubuntu-touch/issues/1566
+- https://github.com/AsteroidOS/asteroid/issues/165
 - https://gitlab.com/calyxos/calyxos/-/issues/205
 - https://gitlab.com/LineageOS/issues/devrel/-/issues/235
 - https://github.com/GrapheneOS-Archive/kernel_google_marlin/pull/1
