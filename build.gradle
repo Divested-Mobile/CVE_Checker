@@ -14,8 +14,14 @@ jar {
     manifest {
         attributes("Main-Class": "Main")
     }
+    from {
+        configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
-version = '0.4.3'
+
+def commit = "git rev-parse --short HEAD".execute().text.trim()
+def commitDate = "git show -s --format=%cs ".concat(commit).execute().text.trim()
+version = '0.4.3_' + commitDate + '_' + commit
