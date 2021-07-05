@@ -22,6 +22,12 @@ jar {
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-def commit = "git rev-parse --short HEAD".execute().text.trim()
-def commitDate = "git show -s --format=%cs ".concat(commit).execute().text.trim()
-version = '0.4.3_' + commitDate + '_' + commit
+def versionGit = ""
+def gitAvailable = "command -v git".execute()
+gitAvailable.waitFor()
+if(gitAvailable.exitValue() == 0) {
+    def commit = "git rev-parse --short HEAD".execute().text.trim()
+    def commitDate = "git show -s --format=%cs ".concat(commit).execute().text.trim()
+    versionGit = "_" + commitDate + '_' + commit
+}
+version = '0.4.3' + versionGit

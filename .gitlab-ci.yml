@@ -5,7 +5,6 @@ variables:
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
-  - sudo apk add --update git
 
 build:
   stage: build
