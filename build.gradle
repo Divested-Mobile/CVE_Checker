@@ -23,7 +23,7 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 def versionGit = ""
-def gitAvailable = "command -v git".execute()
+def gitAvailable = "type git".execute()
 gitAvailable.waitFor()
 if(gitAvailable.exitValue() == 0) {
     def commit = "git rev-parse --short HEAD".execute().text.trim()
