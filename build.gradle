@@ -22,12 +22,21 @@ jar {
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-def versionGit = ""
-def gitAvailable = "type git".execute()
-gitAvailable.waitFor()
-if(gitAvailable.exitValue() == 0) {
-    def commit = "git rev-parse --short HEAD".execute().text.trim()
-    def commitDate = "git show -s --format=%cs ".concat(commit).execute().text.trim()
-    versionGit = "_" + commitDate + '_' + commit
+def getVersionGit() {
+    def versionGit = ""
+    try {
+        def gitAvailable = "command -v git".execute()
+        gitAvailable.waitFor()
+        if(gitAvailable.exitValue() == 0) {
+            def commit = "git rev-parse --short HEAD".execute().text.trim()
+            def commitDate = "git show -s --format=%cs ".concat(commit).execute().text.trim()
+            versionGit = "_" + commitDate + '_' + commit
+        } else {
+            println("git is unavailable")
+        }
+    } catch (Exception e) {
+        println("unable to check for git")
+    }
+    return versionGit
 }
-version = '0.4.3' + versionGit
+version = '0.4.3' + getVersionGit()
