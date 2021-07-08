@@ -114,6 +114,7 @@ Implementation Discussions
 - https://gitlab.com/postmarketOS/pmbootstrap/-/issues/1746
 - https://github.com/ubports/ubuntu-touch/issues/1566
 - https://github.com/AsteroidOS/asteroid/issues/165
+- https://github.com/NixOS/mobile-nixos/issues/383
 - https://gitlab.com/calyxos/calyxos/-/issues/205
 - https://gitlab.com/LineageOS/issues/devrel/-/issues/235
 - https://github.com/GrapheneOS-Archive/kernel_google_marlin/pull/1
