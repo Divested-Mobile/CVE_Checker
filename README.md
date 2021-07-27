@@ -27,6 +27,11 @@ Patch Database
 --------------
 - [On GitHub](https://github.com/Divested-Mobile/Kernel_Patches) or [On GitLab](https://gitlab.com/divested-mobile/kernel_patches)
 
+License
+-------
+- GPL-3.0-or-later
+- Or at your discretion: GPL-2.0 (as per the kernel itself)
+
 Credits
 -------
 - Thanks to @z3ntu for Gradle build support
