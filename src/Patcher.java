@@ -257,6 +257,16 @@ public class Patcher {
       while (process.isAlive()) {
         // Do nothing
       }
+      /*Scanner s = new Scanner(process.getInputStream());
+      while(s.hasNextLine()) {
+        System.out.println(s.nextLine());
+      }
+      s.close();
+      s = new Scanner(process.getErrorStream());
+      while(s.hasNextLine()) {
+        System.out.println(s.nextLine());
+      }
+      s.close();*/
       return process.exitValue();
     } catch (IOException e) {
       e.printStackTrace();
@@ -268,13 +278,7 @@ public class Patcher {
       boolean applyPatch, String alternateRoot, String patchesPathScript) {
     String command = "git -C " + repoPath + " apply --check " + patch;
     if (alternateRoot.length() > 0) {
-      command += " --directory=\"" + alternateRoot + "\"";
-      //Patches often fail to apply merely because the copyright date is modified
-      //This following sed line removes the matching copyright blocks from a patch file
-      //sed '/^@@ -1.* +1.* @@/,/^@@ /{/^\(^@@ -1.* +1.* @@\|^  *\|^- \* Copyright.*\|^+ \* Copyright.*\)/d}'
-      //However it does not appear to work
-      //It should let CVE-2020-11115/qcacld-2.0/0002.patch apply to kernel/oneplus/msm8996 successfully, but it fails
-      //command = "bash -c \"sed '/^@@ -1.* +1.* @@/,/^@@ /{/^\\(^@@ -1.* +1.* @@\\|^  *\\|^- \\* Copyright.*\\|^+ \\* Copyright.*\\)/d}' " + patch + " | git -C " + repoPath + " apply --check --directory=\"\\" + alternateRoot + "\\\" -\"";
+      command += " --directory=" + alternateRoot + "";
     }
     if (patch.contains("0001-LinuxIncrementals")) {
       command += " --exclude=Makefile";
