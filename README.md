@@ -123,6 +123,7 @@ Implementation Discussions
 - https://gitlab.com/calyxos/calyxos/-/issues/205
 - https://gitlab.com/LineageOS/issues/devrel/-/issues/235
 - https://github.com/GrapheneOS-Archive/kernel_google_marlin/pull/1
+- https://github.com/HelloVolla/android_kernel_volla_mt6763/pull/8
 
 Donate
 -------
