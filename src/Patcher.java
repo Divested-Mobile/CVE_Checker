@@ -1,16 +1,16 @@
 /*
  * Copyright (c) 2017-2020 Divested Computing Group
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
@@ -31,8 +31,12 @@ public class Patcher {
   private static File workspacePath = null;
   private static final String patchesPathScriptLinux = "\\$DOS_PATCHES_LINUX_CVES/";
   private static final String scriptPrefix = "android_";
+  private static boolean looseVersions = false;
 
   public static void patch(String[] args) {
+    if(System.getenv("DOS_PATCHER_LOOSE_VERSIONS") != null) {
+      looseVersions = System.getenv("DOS_PATCHER_LOOSE_VERSIONS").equals("true");
+    }
     if (args.length == 1) {
       System.out.println("Mode options are: direct and workspace");
     } else {
@@ -148,6 +152,13 @@ public class Patcher {
           Arrays.sort(patchSetVersions, new AlphanumComparator());
           ArrayList<String> versions = new ArrayList<>();
           // Check which versions are applicable
+          boolean directMatchAvailable = false;
+          for (File patchSetVersion : patchSetVersions) {
+            if(patchSetVersion.getName().startsWith(repoVersion.getVersionFull())) {
+              directMatchAvailable = true;
+            }
+          }
+
           for (File patchSetVersion : patchSetVersions) {
             String patchVersion = patchSetVersion.getName();
             if (isVersionInRange(repoVersion, patchVersion, ignoreMajor)) {
@@ -158,6 +169,21 @@ public class Patcher {
                 || (wifiVersionSupported == 3 && patchVersion.equals("qcacld-3.0"))
                 || (wifiVersionSupported == 4 && patchVersion.equals("qca-wifi-host-cmn"))) {
               versions.add(patchVersion);
+            }
+            if(!directMatchAvailable && looseVersions) {
+              //ugly hack to help 3.x
+              if (repoVersion.getVersionFull().startsWith("3.0") && patchVersion.equals("3.4")) {
+                versions.add(patchVersion);
+              }
+              if (repoVersion.getVersionFull().startsWith("3.4") && patchVersion.equals("3.10")) {
+                versions.add(patchVersion);
+              }
+              if (repoVersion.getVersionFull().startsWith("3.10") && patchVersion.equals("3.18")) {
+                versions.add(patchVersion);
+              }
+              if (repoVersion.getVersionFull().startsWith("3.18") && patchVersion.equals("4.4")) {
+                versions.add(patchVersion);
+              }
             }
           }
 
