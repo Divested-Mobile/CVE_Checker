@@ -32,10 +32,18 @@ public class Patcher {
   private static final String patchesPathScriptLinux = "\\$DOS_PATCHES_LINUX_CVES/";
   private static final String scriptPrefix = "android_";
   private static boolean looseVersions = false;
+  private static boolean looseVersionsExtreme = false;
+  private static boolean gitMailbox = false;
 
   public static void patch(String[] args) {
     if(System.getenv("DOS_PATCHER_LOOSE_VERSIONS") != null) {
-      looseVersions = System.getenv("DOS_PATCHER_LOOSE_VERSIONS").equals("true");
+      looseVersions = System.getenv("DOS_PATCHER_LOOSE_VERSIONS").equalsIgnoreCase("true");
+    }
+    if(System.getenv("DOS_PATCHER_LOOSE_VERSIONS_EXTREME") != null) {
+      looseVersionsExtreme = System.getenv("DOS_PATCHER_LOOSE_VERSIONS_EXTREME").equalsIgnoreCase("true");
+    }
+    if(System.getenv("DOS_PATCHER_GIT_AM") != null) {
+      gitMailbox = System.getenv("DOS_PATCHER_GIT_AM").equalsIgnoreCase("true");
     }
     if (args.length == 1) {
       System.out.println("Mode options are: direct and workspace");
@@ -172,10 +180,14 @@ public class Patcher {
             }
             if(!directMatchAvailable && looseVersions) {
               //ugly hack to help 3.x
-              if (repoVersion.getVersionFull().startsWith("3.0") && patchVersion.equals("3.4")) {
+              //4.4 is maintained well and has all the patches
+              //3.18 currently has a ton of patches thanks to maintenance from Google/Linaro up until 2021-10
+              //3.4 has many backports from the community
+              //3.10 and far more so 3.0 are in not great shape
+              if (repoVersion.getVersionFull().startsWith("3.0") && (patchVersion.equals("3.4") || (looseVersionsExtreme && (patchVersion.equals("3.10") || patchVersion.equals("3.18"))))) {
                 versions.add(patchVersion);
               }
-              if (repoVersion.getVersionFull().startsWith("3.4") && patchVersion.equals("3.10")) {
+              if (repoVersion.getVersionFull().startsWith("3.4") && (patchVersion.equals("3.10") || (looseVersionsExtreme && patchVersion.equals("3.18")))) {
                 versions.add(patchVersion);
               }
               if (repoVersion.getVersionFull().startsWith("3.10") && patchVersion.equals("3.18")) {
@@ -312,11 +324,9 @@ public class Patcher {
     try {
       if (runCommand(command) == 0) {
         command = command.replaceAll(" --check", "");
-        /*
-         * if(isGitPatch(patch)) {
-         * command = command.replaceAll(" apply ", " am ");
-         * }
-         */
+         if(gitMailbox && isGitPatch(patch)) {
+          command = command.replaceAll(" apply ", " am ");
+         }
         System.out.println(
             "\t\tPatch can apply successfully: " + logPretty(command, repoPath, patchesPath));
         if (applyPatch) {
