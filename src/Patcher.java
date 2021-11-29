@@ -187,10 +187,10 @@ public class Patcher {
               if (repoVersion.getVersionFull().startsWith("3.0") && (patchVersion.equals("3.4") || (looseVersionsExtreme && (patchVersion.equals("3.10") || patchVersion.equals("3.18") || patchVersion.equals("4.4"))))) {
                 versions.add(patchVersion);
               }
-              if (repoVersion.getVersionFull().startsWith("3.4") && (patchVersion.equals("3.10") || (looseVersionsExtreme && patchVersion.equals("3.18") || patchVersion.equals("4.4")))) {
+              if (repoVersion.getVersionFull().startsWith("3.4") && (patchVersion.equals("3.10") || (looseVersionsExtreme && (patchVersion.equals("3.18") || patchVersion.equals("4.4"))))) {
                 versions.add(patchVersion);
               }
-              if (repoVersion.getVersionFull().startsWith("3.10") && (patchVersion.equals("3.18") || (looseVersionsExtreme && patchVersion.equals("4.4")))) {
+              if (repoVersion.getVersionFull().startsWith("3.10") && (patchVersion.equals("3.18") || (looseVersionsExtreme && (patchVersion.equals("4.4"))))) {
                 versions.add(patchVersion);
               }
               if (repoVersion.getVersionFull().startsWith("3.18") && patchVersion.equals("4.4")) {
