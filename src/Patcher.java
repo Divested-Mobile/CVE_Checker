@@ -184,13 +184,13 @@ public class Patcher {
               //3.18 currently has a ton of patches thanks to maintenance from Google/Linaro up until 2021-10
               //3.4 has many backports from the community
               //3.10 and far more so 3.0 are in not great shape
-              if (repoVersion.getVersionFull().startsWith("3.0") && (patchVersion.equals("3.4") || (looseVersionsExtreme && (patchVersion.equals("3.10") || patchVersion.equals("3.18"))))) {
+              if (repoVersion.getVersionFull().startsWith("3.0") && (patchVersion.equals("3.4") || (looseVersionsExtreme && (patchVersion.equals("3.10") || patchVersion.equals("3.18") || patchVersion.equals("4.4"))))) {
                 versions.add(patchVersion);
               }
-              if (repoVersion.getVersionFull().startsWith("3.4") && (patchVersion.equals("3.10") || (looseVersionsExtreme && patchVersion.equals("3.18")))) {
+              if (repoVersion.getVersionFull().startsWith("3.4") && (patchVersion.equals("3.10") || (looseVersionsExtreme && patchVersion.equals("3.18") || patchVersion.equals("4.4")))) {
                 versions.add(patchVersion);
               }
-              if (repoVersion.getVersionFull().startsWith("3.10") && patchVersion.equals("3.18")) {
+              if (repoVersion.getVersionFull().startsWith("3.10") && (patchVersion.equals("3.18") || (looseVersionsExtreme && patchVersion.equals("4.4")))) {
                 versions.add(patchVersion);
               }
               if (repoVersion.getVersionFull().startsWith("3.18") && patchVersion.equals("4.4")) {
