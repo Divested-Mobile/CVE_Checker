@@ -36,7 +36,8 @@ public class Scraper {
     if (link.startsWith("https://source.android.com/security/bulletin/")
         || link.startsWith("https://www.qualcomm.com/company/product-security/bulletins/")
         || link.startsWith("https://www.qualcomm.com/product-security/bulletins/")
-        || link.startsWith("https://www.codeaurora.org/security-bulletin/")) {
+        || link.startsWith("https://www.codeaurora.org/security-bulletin/")
+        || link.endsWith("Qualcomm.html")) {
       scrapeTable(link);
     } else if (link.contains("cip-kernel-sec")) {
       scrapeCIP(link);
