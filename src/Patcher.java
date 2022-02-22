@@ -180,7 +180,7 @@ public class Patcher {
             }
             if(!directMatchAvailable && looseVersions) {
               //ugly hack to help 3.x
-              //4.4 is maintained well and has all the patches
+              //4.4 was maintained well and has all the patches
               //3.18 currently has a ton of patches thanks to maintenance from Google/Linaro up until 2021-10
               //3.4 has many backports from the community
               //3.10 and far more so 3.0 are in not great shape
@@ -193,7 +193,10 @@ public class Patcher {
               if (repoVersion.getVersionFull().startsWith("3.10") && (patchVersion.equals("3.18") || (looseVersionsExtreme && (patchVersion.equals("4.4"))))) {
                 versions.add(patchVersion);
               }
-              if (repoVersion.getVersionFull().startsWith("3.18") && patchVersion.equals("4.4")) {
+              if (repoVersion.getVersionFull().startsWith("3.18") && (patchVersion.equals("4.4") || (looseVersionsExtreme && (patchVersion.equals("4.9"))))) {
+                versions.add(patchVersion);
+              }
+              if (repoVersion.getVersionFull().startsWith("4.4") && patchVersion.equals("4.9")) {
                 versions.add(patchVersion);
               }
             }
