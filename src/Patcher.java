@@ -325,7 +325,7 @@ public class Patcher {
       command += " --exclude=Makefile";
     }
     try {
-      if (runCommand(command) == 0) {
+      if (runCommand(command + " --reverse") != 0 && runCommand(command) == 0) {
         command = command.replaceAll(" --check", "");
          if(gitMailbox && isGitPatch(patch)) {
           command = command.replaceAll(" apply ", " am ");
