@@ -24,6 +24,7 @@ public class Sorter {
   private static ArrayList<CVE> cves = new ArrayList<>();
 
   public static void sort(File manifest) {
+    Common.initEnv();
     try {
       Scanner s = new Scanner(manifest);
       String curId = "";
@@ -53,6 +54,15 @@ public class Sorter {
       }
       System.out.println(cve.getId());
       for (String line : cve.getLines()) {
+        if(Common.INCLUSIVE_KERNEL_PATH != null && line.contains("Link - ^")
+                && (line.contains(Common.URL_LINUX_MAINLINE) || line.contains(Common.URL_LINUX_STABLE))) {
+          String[] lineSplit = line.split(" - ");
+          String commitID = lineSplit[2].split("=")[1];
+          Version kernelVersion = Common.getPatchVersion(commitID);
+          if(kernelVersion != null) {
+            line = "\tLink - ^" + kernelVersion.getVersionFull() + " - " + lineSplit[2].trim();
+          }
+        }
         System.out.println(line);
       }
     }

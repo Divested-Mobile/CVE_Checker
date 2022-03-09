@@ -19,12 +19,16 @@ public class Version {
   private String versionFull = "";
   private int version = 0;
   private int patchLevel = 0;
+  private int sublevel = 0;
 
   public Version(String version) {
     this.versionFull = version;
     String[] versionSplit = version.split("\\.");
     this.version = Integer.valueOf(versionSplit[0]);
     this.patchLevel = Integer.valueOf(versionSplit[1]);
+/*    if(versionSplit.length == 3) {
+      this.sublevel = Integer.valueOf(versionSplit[2]);
+    }*/
   }
 
   public Version(int version, int patchLevel) {

@@ -125,7 +125,7 @@ public class Patcher {
         firstPass = scriptCommands.size();
       }
 
-      Version repoVersion = getKernelVersion(repoPath);
+      Version repoVersion = Common.getKernelVersion(repoPath);
       String patchesPathScript = patchesPathScriptLinux;
       boolean ignoreMajor = false;
       if (new File(repoPath + "/drivers/staging/prima/").exists()) {
@@ -353,30 +353,6 @@ public class Patcher {
       }
     }
     return commands;
-  }
-
-  private static Version getKernelVersion(File kernelPath) {
-    String kernelVersion = "";
-    try {
-      Scanner kernelMakefile = new Scanner(new File(kernelPath + "/Makefile"));
-      while (kernelMakefile.hasNextLine()) {
-        String line = kernelMakefile.nextLine();
-        if (line.startsWith("VERSION = ")) {
-          kernelVersion = line.split("= ")[1];
-        }
-        if (line.startsWith("PATCHLEVEL = ")) {
-          kernelVersion += "." + line.split("= ")[1];
-        }
-        if (line.startsWith("NAME = ")) {
-          break;
-        }
-      }
-      kernelMakefile.close();
-      System.out.println("Detected kernel version " + kernelVersion);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return new Version(kernelVersion);
   }
 
   private static boolean isVersionInRange(Version repo, String patch, boolean ignoreMajor) {

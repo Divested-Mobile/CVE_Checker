@@ -28,14 +28,9 @@ public class Downloader {
   private static ArrayList<CVE> cves = new ArrayList<CVE>();
   private static final String userAgent =
       "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0";
-  private static String INCLUSIVE_KERNEL_PATH = null;
 
   public static void download(File manifest) {
-    if(System.getenv("DOS_PATCHER_INCLUSIVE_KERNEL") != null) {
-      if(new File(System.getenv("DOS_PATCHER_INCLUSIVE_KERNEL")).exists()) {
-        INCLUSIVE_KERNEL_PATH = System.getenv("DOS_PATCHER_INCLUSIVE_KERNEL");
-      }
-    }
+    Common.initEnv();
 
     String output = "";
 
@@ -120,9 +115,9 @@ public class Downloader {
               String patchOutput =
                   outDir.getAbsolutePath() + "/" + String.format("%04d", linkC) + ".patch" + base64;
               boolean needDownload = true;
-              if(INCLUSIVE_KERNEL_PATH != null && (link.getURL().startsWith(Common.URL_LINUX_MAINLINE) || link.getURL().startsWith(Common.URL_LINUX_STABLE))) {
+              if(Common.INCLUSIVE_KERNEL_PATH != null && (link.getURL().startsWith(Common.URL_LINUX_MAINLINE) || link.getURL().startsWith(Common.URL_LINUX_STABLE))) {
                 String commitID = link.getURL().split("=")[1];
-                if (Common.runCommand("git -C " + INCLUSIVE_KERNEL_PATH + " format-patch -1 " + commitID + " --no-signature --keep-subject --output " + patchOutput) == 0) {
+                if (Common.runCommand("git -C " + Common.INCLUSIVE_KERNEL_PATH + " format-patch -1 " + commitID + " --no-signature --keep-subject --output " + patchOutput) == 0) {
                   needDownload = false;
                   System.out.println("\t\tPulled patch directly from local repo");
                 } else {
