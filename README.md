@@ -81,6 +81,7 @@ Downloading Entire Repository
 - You will likely be rate-limited
 - Some patches will be missing as the links may no longer be valid
 - There are a handful of patches that have been added by hand (eg. compressed, or manually backported)
+- Pointing DOS_PATCHER_INCLUSIVE_KERNEL to a (CIP) combined kernel repo will generate patches locally when possible
 
 Patching
 --------

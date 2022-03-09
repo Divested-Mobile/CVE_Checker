@@ -292,29 +292,6 @@ public class Patcher {
     return string;
   }
 
-  private static int runCommand(String command) {
-    try {
-      Process process = Runtime.getRuntime().exec(command);
-      while (process.isAlive()) {
-        // Do nothing
-      }
-      /*Scanner s = new Scanner(process.getInputStream());
-      while(s.hasNextLine()) {
-        System.out.println(s.nextLine());
-      }
-      s.close();
-      s = new Scanner(process.getErrorStream());
-      while(s.hasNextLine()) {
-        System.out.println(s.nextLine());
-      }
-      s.close();*/
-      return process.exitValue();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return -1;
-  }
-
   private static String doesPatchApply(File repoPath, File patchesPath, String patch,
       boolean applyPatch, String alternateRoot, String patchesPathScript) {
     String command = "git -C " + repoPath + " apply --check " + patch;
@@ -325,7 +302,7 @@ public class Patcher {
       command += " --exclude=Makefile";
     }
     try {
-      if (runCommand(command + " --reverse") != 0 && runCommand(command) == 0) {
+      if (Common.runCommand(command + " --reverse") != 0 && Common.runCommand(command) == 0) {
         command = command.replaceAll(" --check", "");
          if(gitMailbox && isGitPatch(patch)) {
           command = command.replaceAll(" apply ", " am ");
@@ -333,7 +310,7 @@ public class Patcher {
         System.out.println(
             "\t\tPatch can apply successfully: " + logPretty(command, repoPath, patchesPath));
         if (applyPatch) {
-          if (runCommand(command) == 0) {
+          if (Common.runCommand(command) == 0) {
             System.out.println(
                 "\t\t\tPatch applied successfully: " + logPretty(command, repoPath, patchesPath));
           } else {

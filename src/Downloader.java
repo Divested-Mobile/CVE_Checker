@@ -27,9 +27,16 @@ public class Downloader {
 
   private static ArrayList<CVE> cves = new ArrayList<CVE>();
   private static final String userAgent =
-      "Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0";
+      "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0";
+  private static String INCLUSIVE_KERNEL_PATH = null;
 
   public static void download(File manifest) {
+    if(System.getenv("DOS_PATCHER_INCLUSIVE_KERNEL") != null) {
+      if(new File(System.getenv("DOS_PATCHER_INCLUSIVE_KERNEL")).exists()) {
+        INCLUSIVE_KERNEL_PATH = System.getenv("DOS_PATCHER_INCLUSIVE_KERNEL");
+      }
+    }
+
     String output = "";
 
     // Read in all the CVEs from the manifest file
@@ -112,7 +119,19 @@ public class Downloader {
               }
               String patchOutput =
                   outDir.getAbsolutePath() + "/" + String.format("%04d", linkC) + ".patch" + base64;
-              downloadFile(patch, new File(patchOutput), false);
+              boolean needDownload = true;
+              if(INCLUSIVE_KERNEL_PATH != null && (link.getURL().startsWith(Common.URL_LINUX_MAINLINE) || link.getURL().startsWith(Common.URL_LINUX_STABLE))) {
+                String commitID = link.getURL().split("=")[1];
+                if (Common.runCommand("git -C " + INCLUSIVE_KERNEL_PATH + " format-patch -1 " + commitID + " --no-signature --keep-subject --output " + patchOutput) == 0) {
+                  needDownload = false;
+                  System.out.println("\t\tPulled patch directly from local repo");
+                } else {
+                  System.out.println("\t\tFailed to pull patch from local repo");
+                }
+              }
+              if(needDownload) {
+                downloadFile(patch, new File(patchOutput), false);
+              }
               if (isBase64Encoded(link)) {
                 try {
                   Process b64dec = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c",
@@ -141,7 +160,10 @@ public class Downloader {
   }
 
   private static String getPatchURL(Link link) {
-    String url = link.getURL().replaceAll("http://", "https://");
+    String url = link.getURL()
+            .replaceAll("http://", "https://")
+            .replaceAll("LINUX_KERNEL_MAINLINE=", Common.URL_LINUX_MAINLINE)
+            .replaceAll("LINUX_KERNEL_STABLE=", Common.URL_LINUX_STABLE);
     if (url.contains("lkml.org/lkml/diff")
         || (url.contains("raw.githubusercontent") && url.endsWith(".patch"))
         || (url.contains("marc.info") && url.endsWith("q=raw"))

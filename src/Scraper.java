@@ -138,13 +138,6 @@ public class Scraper {
   }
 
   public static void scrapeCIP(String path) {
-    final String linux =
-        "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=";
-    final String linuxStable =
-        "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=";
-    final String aospStable =
-        "https://android.googlesource.com/kernel/common/+/";
-
     List<File> issues = Arrays.asList(new File(path + "/issues/").listFiles(File::isFile));
     if (issues != null && issues.size() > 0) {
       Collections.sort(issues, new AlphanumComparator());
@@ -174,10 +167,10 @@ public class Scraper {
                 final String commit = line.split("\\[")[1].split("\\]")[0];
                 if (commit.contains(", ")) {
                   for (String commitS : commit.split(", ")) {
-                    System.out.println("\tLink - " + linux + commitS);
+                    System.out.println("\tLink - " + Common.URL_LINUX_MAINLINE + commitS);
                   }
                 } else {
-                  System.out.println("\tLink - " + linux + commit);
+                  System.out.println("\tLink - " + Common.URL_LINUX_MAINLINE + commit);
                 }
               }
               if (line.contains("stable/")) {
@@ -185,10 +178,10 @@ public class Scraper {
                 final String commit = line.split("\\[")[1].split("\\]")[0];
                 if (commit.contains(", ")) {
                   for (String commitS : commit.split(", ")) {
-                    System.out.println("\tLink - " + version + " - " + linuxStable + commitS);
+                    System.out.println("\tLink - " + version + " - " + Common.URL_LINUX_STABLE + commitS);
                   }
                 } else {
-                  System.out.println("\tLink - " + version + " - " + linuxStable + commit);
+                  System.out.println("\tLink - " + version + " - " + Common.URL_LINUX_STABLE + commit);
                 }
               }
               if (line.contains("aosp/")) {
@@ -196,10 +189,10 @@ public class Scraper {
                 final String commit = line.split("\\[")[1].split("\\]")[0];
                 if (commit.contains(", ")) {
                   for (String commitS : commit.split(", ")) {
-                    System.out.println("\tLink - " + version + " - " + aospStable + commitS);
+                    System.out.println("\tLink - " + version + " - " + Common.URL_AOSP_STABLE + commitS);
                   }
                 } else {
-                  System.out.println("\tLink - " + version + " - " + aospStable + commit);
+                  System.out.println("\tLink - " + version + " - " + Common.URL_AOSP_STABLE + commit);
                 }
               }
             }
