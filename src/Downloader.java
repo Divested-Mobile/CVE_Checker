@@ -115,9 +115,19 @@ public class Downloader {
               String patchOutput =
                   outDir.getAbsolutePath() + "/" + String.format("%04d", linkC) + ".patch" + base64;
               boolean needDownload = true;
-              if(Common.INCLUSIVE_KERNEL_PATH != null && (link.getURL().startsWith(Common.URL_LINUX_MAINLINE) || link.getURL().startsWith(Common.URL_LINUX_STABLE))) {
-                String commitID = link.getURL().split("=")[1];
-                if (Common.runCommand("git -C " + Common.INCLUSIVE_KERNEL_PATH + " format-patch -1 " + commitID + " --no-signature --keep-subject --output " + patchOutput) == 0) {
+              if(Common.INCLUSIVE_KERNEL_PATH != null && (link.getURL().startsWith(Common.URL_LINUX_MAINLINE) || link.getURL().startsWith(Common.URL_LINUX_STABLE) || link.getURL().startsWith(Common.URL_AOSP_STABLE))) {
+                String commitID = null;
+                if(link.getURL().contains("=")) {
+                  commitID = link.getURL().split("=")[1];
+                }
+                if(link.getURL().contains("/+/")) {
+                  commitID = link.getURL().split("/\\+/")[1];
+                }
+                if(commitID == null) {
+                  System.out.println("Unable to extract commit ID");
+                  System.exit(1);
+                }
+                if (Common.runCommand("git -C " + Common.INCLUSIVE_KERNEL_PATH + " format-patch -1 " + commitID + " --no-signature --keep-subject --output " + patchOutput.replaceAll(".base64", "")) == 0) {
                   needDownload = false;
                   System.out.println("\t\tPulled patch directly from local repo");
                 } else {
@@ -126,20 +136,20 @@ public class Downloader {
               }
               if(needDownload) {
                 downloadFile(patch, new File(patchOutput), false);
-              }
-              if (isBase64Encoded(link)) {
-                try {
-                  Process b64dec = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c",
-                      "base64 -d " + patchOutput + " > " + patchOutput.replaceAll(base64, "")});
-                  while (b64dec.isAlive()) {
-                    // Do nothing
+                if (isBase64Encoded(link)) {
+                  try {
+                    Process b64dec = Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c",
+                        "base64 -d " + patchOutput + " > " + patchOutput.replaceAll(base64, "")});
+                    while (b64dec.isAlive()) {
+                      // Do nothing
+                    }
+                    if (b64dec.exitValue() != 0) {
+                      System.out.println("Failed to decode patch - " + patch);
+                      System.exit(1);
+                    }
+                  } catch (IOException e) {
+                    e.printStackTrace();
                   }
-                  if (b64dec.exitValue() != 0) {
-                    System.out.println("Failed to decode patch - " + patch);
-                    System.exit(1);
-                  }
-                } catch (IOException e) {
-                  e.printStackTrace();
                 }
               }
               System.out.println("\t\tDownloaded " + link.getURL());
@@ -158,7 +168,8 @@ public class Downloader {
     String url = link.getURL()
             .replaceAll("http://", "https://")
             .replaceAll("LINUX_KERNEL_MAINLINE=", Common.URL_LINUX_MAINLINE)
-            .replaceAll("LINUX_KERNEL_STABLE=", Common.URL_LINUX_STABLE);
+            .replaceAll("LINUX_KERNEL_STABLE=", Common.URL_LINUX_STABLE)
+            .replaceAll("AOSP_KERNEL_STABLE=", Common.URL_AOSP_STABLE);
     if (url.contains("lkml.org/lkml/diff")
         || (url.contains("raw.githubusercontent") && url.endsWith(".patch"))
         || (url.contains("marc.info") && url.endsWith("q=raw"))

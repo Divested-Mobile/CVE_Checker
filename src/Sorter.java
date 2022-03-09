@@ -55,9 +55,19 @@ public class Sorter {
       System.out.println(cve.getId());
       for (String line : cve.getLines()) {
         if(Common.INCLUSIVE_KERNEL_PATH != null && line.contains("Link - ^")
-                && (line.contains(Common.URL_LINUX_MAINLINE) || line.contains(Common.URL_LINUX_STABLE))) {
+                && (line.contains(Common.URL_LINUX_MAINLINE) || line.contains(Common.URL_LINUX_STABLE) || line.contains(Common.URL_AOSP_STABLE))) {
           String[] lineSplit = line.split(" - ");
-          String commitID = lineSplit[2].split("=")[1];
+          String commitID = null;
+          if(lineSplit[2].contains("=")) {
+            commitID = lineSplit[2].split("=")[1];
+          }
+          if(lineSplit[2].contains("/+/")) {
+            commitID = lineSplit[2].split("/\\+/")[1];
+          }
+          if(commitID == null) {
+            System.out.println("Unable to extract commit ID");
+            System.exit(1);
+          }
           Version kernelVersion = Common.getPatchVersion(commitID);
           if(kernelVersion != null) {
             line = "\tLink - ^" + kernelVersion.getVersionFull() + " - " + lineSplit[2].trim();

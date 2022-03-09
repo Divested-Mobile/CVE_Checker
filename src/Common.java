@@ -92,7 +92,6 @@ public class Common {
             return getKernelVersion(output, true);
         } catch (Exception e) {
             e.printStackTrace();
-
         }
         return null;
     }
