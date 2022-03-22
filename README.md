@@ -19,7 +19,7 @@ Real World Use
 --------------
 - This project was considered viable by end of 2017 and has been in use since then for DivestOS.
 - The corresponding CVE database is likely one of the largest with support for older kernels.
-- It is currently used for improving the security of the 90+ devices supported by DivestOS, and is tested booting on 45+ of them.
+- It is currently used for improving the security of the 100+ devices supported by DivestOS, and is tested booting on 65+ of them.
 - It is often near impossible to provide viable mainline support for many vendor altered kernel trees. We believe this project at the very least improves their situation. To ignore this is to be a defeatist. Not everyone can afford the latest shiny thing.
 - Applied examples: [18.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-18.1/CVE_Patchers), [17.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-17.1/CVE_Patchers), [16.0](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-16.0/CVE_Patchers), [15.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-15.1/CVE_Patchers), [14.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-14.1/CVE_Patchers)
 
@@ -81,7 +81,7 @@ Downloading Entire Repository
 - You will likely be rate-limited
 - Some patches will be missing as the links may no longer be valid
 - There are a handful of patches that have been added by hand (eg. compressed, or manually backported)
-- Pointing DOS_PATCHER_INCLUSIVE_KERNEL to a (CIP) combined kernel repo will generate patches locally when possible
+- Pointing $DOS_PATCHER_INCLUSIVE_KERNEL to a (CIP) combined kernel repo will generate patches locally when possible
 
 Patching
 --------
