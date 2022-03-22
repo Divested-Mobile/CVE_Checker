@@ -8,19 +8,19 @@ Notes on CVE Patching
 - Patches applied may not be relevant to a device's architecture or hardware
 - Patches can make issues worse, or create new issues
 - Backported patches do not receive much review
-- Patches may not compeletely mitigate the issue they intend to
+- Patches may not completely mitigate the issue they intend to
 - There are many security patches that do not receive CVEs
 - Linux has many known security issues that go unresolved for years
 - This is not a long-term solution
-- We need more rigrious support lifecycles from upstreams
-- This project is soley made to attempt to improve the security and by extension the lifespan of unsupported devices
+- We need more rigorous support lifecycles from upstreams
+- This project is solely made to attempt to improve the security and by extension the lifespan of unsupported devices
 
 Real World Use
 --------------
 - This project was considered viable by end of 2017 and has been in use since then for DivestOS.
 - The corresponding CVE database is likely one of the largest with support for older kernels.
 - It is currently used for improving the security of the 90+ devices supported by DivestOS, and is tested booting on 45+ of them.
-- It is often near impossible to provide viable mainline support for many vendor altered kernel trees. We believe this project at the very least improves their sitatuion. To ignore this is to be a defeatist. Not everyone can afford the latest shiny thing.
+- It is often near impossible to provide viable mainline support for many vendor altered kernel trees. We believe this project at the very least improves their situation. To ignore this is to be a defeatist. Not everyone can afford the latest shiny thing.
 - Applied examples: [18.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-18.1/CVE_Patchers), [17.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-17.1/CVE_Patchers), [16.0](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-16.0/CVE_Patchers), [15.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-15.1/CVE_Patchers), [14.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-14.1/CVE_Patchers)
 
 Patch Database
@@ -92,7 +92,7 @@ Using the Resulting Scripts
 ---------------------------
 - This part is entirely up to you
 - They are intended to be run during build time
-- The results of them shouldn't be commited to a tree due to the automated nature
+- The results of them shouldn't be committed to a tree due to the automated nature
 
 Identifying Failed Patches
 --------------------------
