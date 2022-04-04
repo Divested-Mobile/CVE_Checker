@@ -184,6 +184,17 @@ public class Scraper {
                   System.out.println("\tLink - " + version + " - " + Common.URL_LINUX_STABLE + commit);
                 }
               }
+              if (line.contains("cip/4.4") && !line.contains("4.4-st") && !line.contains("4.4-rt")) {
+                final String version = line.split("cip/")[1].split(":")[0];
+                final String commit = line.split("\\[")[1].split("\\]")[0];
+                if (commit.contains(", ")) {
+                  for (String commitS : commit.split(", ")) {
+                    System.out.println("\tLink - " + version + " - " + Common.URL_LINUX_CIP + commitS);
+                  }
+                } else {
+                  System.out.println("\tLink - " + version + " - " + Common.URL_LINUX_CIP + commit);
+                }
+              }
               if (line.contains("aosp/")) {
                 final String version = line.split("aosp/")[1].split(":")[0];
                 final String commit = line.split("\\[")[1].split("\\]")[0];

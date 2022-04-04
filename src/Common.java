@@ -8,6 +8,8 @@ public class Common {
             "https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=";
     public static final String URL_LINUX_STABLE =
             "https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=";
+    public static final String URL_LINUX_CIP =
+            "https://git.kernel.org/pub/scm/linux/kernel/git/cip/linux-cip.git/commit/?id=";
     public static final String URL_AOSP_STABLE =
             "https://android.googlesource.com/kernel/common/+/";
     public static String INCLUSIVE_KERNEL_PATH = null;

@@ -40,6 +40,10 @@ public class Sorter {
           }
           curId = line;
         } else {
+          if(line.contains("=")) {
+            String commitID = line.split("=")[1];
+            lines.removeIf(previous -> previous.contains(commitID) && (previous.contains("android.googlesource") || previous.contains("cip/linux-cip")));
+          }
           lines.add(line);
         }
       }
