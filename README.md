@@ -105,6 +105,17 @@ Identifying Failed Patches
 - Once you find it, you'll want to mark that somewhere. DivestOS has a [Fix_CVE_Patchers.sh](https://github.com/Divested-Mobile/DivestOS-Build/blob/master/Scripts/Common/Fix_CVE_Patchers.sh) for tracking/disabling them
 - Generally if it compiles, it boots. However there are patches that can compile and absolutely break boot, see: CVE-2017-13218/4.4/0027.patch
 
+Patch Version Matrix
+--------------------
+| Version | Default | Loose | Extreme         |
+| ------- | ------- | ----- | --------------- |
+| 3.0     |3.0      | 3.4   | 3.10, 3.18, 4.4 |
+| 3.4     |3.4      | 3.10  | 3.18, 4.4       |
+| 3.10    |3.10     | 3.18  | 4.4             |
+| 3.18    |3.18     | 4.4   | 4.9             |
+| 4.4     |4.4      | 4.9   | x               |
+| 4.9     |4.9      | x     | x               |
+
 Relevant Links
 --------------
 - https://gitlab.com/cip-project/cip-kernel/cip-kernel-sec
