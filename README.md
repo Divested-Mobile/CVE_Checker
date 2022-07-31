@@ -27,6 +27,10 @@ Patch Database
 --------------
 - [On GitHub](https://github.com/Divested-Mobile/Kernel_Patches) or [On GitLab](https://gitlab.com/divested-mobile/kernel_patches)
 
+Prebuilts
+---------
+- via CI: https://gitlab.com/divested-mobile/cve_checker/-/jobs/artifacts/master/browse?job=build
+
 License
 -------
 - GPL-3.0-or-later
