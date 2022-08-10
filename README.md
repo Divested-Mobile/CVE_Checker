@@ -21,7 +21,7 @@ Real World Use
 - The corresponding CVE database is likely one of the largest with support for older kernels.
 - It is currently used for improving the security of the 100+ devices supported by DivestOS, and is tested booting on 65+ of them.
 - It is often near impossible to provide viable mainline support for many vendor altered kernel trees. We believe this project at the very least improves their situation. To ignore this is to be a defeatist. Not everyone can afford the latest shiny thing.
-- Applied examples: [18.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-18.1/CVE_Patchers), [17.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-17.1/CVE_Patchers), [16.0](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-16.0/CVE_Patchers), [15.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-15.1/CVE_Patchers), [14.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-14.1/CVE_Patchers)
+- Applied examples: [19.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-19.1/CVE_Patchers), [18.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-18.1/CVE_Patchers), [17.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-17.1/CVE_Patchers), [16.0](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-16.0/CVE_Patchers), [15.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-15.1/CVE_Patchers), [14.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-14.1/CVE_Patchers)
 
 Patch Database
 --------------

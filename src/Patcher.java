@@ -304,9 +304,6 @@ public class Patcher {
     try {
       if (Common.runCommand(command + " --reverse") != 0 && Common.runCommand(command) == 0) {
         command = command.replaceAll(" --check", "");
-         if(gitMailbox && isGitPatch(patch)) {
-          command = command.replaceAll(" apply ", " am ");
-         }
         System.out.println(
             "\t\tPatch can apply successfully: " + logPretty(command, repoPath, patchesPath));
         if (applyPatch) {
@@ -318,6 +315,9 @@ public class Patcher {
                 + logPretty(command, repoPath, patchesPath));
             System.exit(1);
           }
+        }
+        if(gitMailbox && isGitPatch(patch)) {
+          command = command.replaceAll(" apply ", " am ");
         }
         return command.replaceAll(" -C " + repoPath, "")
             .replaceAll(ensureLeadingSlash(patchesPath.toString()), patchesPathScript);
