@@ -22,6 +22,11 @@ jar {
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
 def getVersionGit() {
     def versionGit = ""
     try {
