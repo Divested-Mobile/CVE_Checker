@@ -33,6 +33,7 @@ public class Patcher {
   private static final String scriptPrefix = "android_";
   private static boolean looseVersions = false;
   private static boolean looseVersionsExtreme = false;
+  private static boolean looseVersionsReverse = false;
   private static boolean gitMailbox = false;
 
   public static void patch(String[] args) {
@@ -41,6 +42,9 @@ public class Patcher {
     }
     if(System.getenv("DOS_PATCHER_LOOSE_VERSIONS_EXTREME") != null) {
       looseVersionsExtreme = System.getenv("DOS_PATCHER_LOOSE_VERSIONS_EXTREME").equalsIgnoreCase("true");
+    }
+    if(System.getenv("DOS_PATCHER_LOOSE_VERSIONS_REVERSE") != null) {
+      looseVersionsReverse = System.getenv("DOS_PATCHER_LOOSE_VERSIONS_REVERSE").equalsIgnoreCase("true");
     }
     if(System.getenv("DOS_PATCHER_GIT_AM") != null) {
       gitMailbox = System.getenv("DOS_PATCHER_GIT_AM").equalsIgnoreCase("true");
@@ -199,6 +203,31 @@ public class Patcher {
               if (repoVersion.getVersionFull().startsWith("4.4") && patchVersion.equals("4.9")) {
                 versions.add(patchVersion);
               }
+              if (repoVersion.getVersionFull().startsWith("4.9") && patchVersion.equals("4.14")) {
+                versions.add(patchVersion);
+              }
+              //Try to apply 3.4 patches to 3.10 regardless of 3.18 patches being available
+              //Can result in 3.4 patches being applied instead of more appropriate 3.18 patches
+              //if (looseVersionsReverse && repoVersion.getVersionFull().startsWith("3.10") && patchVersion.equals("3.4")) {
+              //  versions.add(patchVersion);
+              //}
+            }
+          }
+
+          //Conservatively apply 3.4 patches to 3.10 if 3.18 patches aren't available
+          if(!directMatchAvailable && looseVersions && looseVersionsReverse && repoVersion.getVersionFull().startsWith("3.10")) {
+            boolean is318Available = false;
+            boolean is34Available = false;
+            for (File patchSetVersion : patchSetVersions) {
+              if(patchSetVersion.getName().startsWith("3.18")) {
+                is318Available = true;
+              }
+              if(patchSetVersion.getName().startsWith("3.4")) {
+                is34Available = true;
+              }
+            }
+            if(!is318Available && is34Available) {
+              versions.add("3.4");
             }
           }
 
