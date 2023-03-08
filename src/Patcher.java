@@ -294,13 +294,15 @@ public class Patcher {
       PrintWriter out = new PrintWriter(script, "UTF-8");
       out.println("#!/bin/bash");
       if (MODE_CURRENT == MODE_WORKSPACE) {
-        out.println("cd \"$DOS_BUILD_BASE\"\"" + repoName.replaceAll("_", "/") + "\"");
+        out.println("if cd \"$DOS_BUILD_BASE\"\"" + repoName.replaceAll("_", "/") + "\"; then");
       }
       for (String command : scriptCommands) {
         out.println(command);
       }
       if (MODE_CURRENT == MODE_WORKSPACE) {
         out.println("editKernelLocalversion \"-dos.p" + scriptCommands.size() + "\"");
+        out.println("else echo \"" + repoName + " is unavailable, not patching.\";");
+        out.println("fi;");
         out.println("cd \"$DOS_BUILD_BASE\"");
       }
       out.close();

@@ -44,4 +44,4 @@ def getVersionGit() {
     }
     return versionGit
 }
-version = '0.6.6' + getVersionGit()
+version = '0.6.7' + getVersionGit()

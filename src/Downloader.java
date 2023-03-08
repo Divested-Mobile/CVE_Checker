@@ -176,7 +176,7 @@ public class Downloader {
         || (url.contains("marc.info") && url.endsWith("q=raw"))
         || (url.contains("lore.kernel.org") && url.endsWith("/raw"))) {
       return url;
-    } else if (url.contains("github.com") || url.contains("git.codelinaro.org")) {
+    } else if (url.contains("github.com") || url.contains("git.codelinaro.org") || url.contains("gitlab.com")) {
       return url + ".patch";
     } else if (url.contains("git.kernel.org")) {
       return url.replaceAll("cgit/", "pub/scm/").replaceAll("commit", "patch");
