@@ -89,6 +89,7 @@ Downloading Entire Repository
 
 Patching
 --------
+- Key: $outputDir is where script will be saved, $repoPath is the kernel to be checked, $repoName is vanity name of kernel
 - To patch a kernel directly: java -jar $DOS_BINARY_PATCHER patch direct $DOS_PATCHES_LINUX_CVES $outputDir/ $repoPath/:repoName...
 - To patch a kernel in an AOSP workspace: java -jar $DOS_BINARY_PATCHER patch workspace $workspace/ $DOS_PATCHES_LINUX_CVES $outputDir/ $repoName...
 
@@ -129,17 +130,24 @@ Relevant Links
 - https://github.com/raymanfx/android-cve-checker
 - https://github.com/tdm/vuln-patcher
 
-Implementation Discussions
---------------------------
-- https://github.com/hashbang/os/issues/43
-- https://gitlab.com/postmarketOS/pmbootstrap/-/issues/1746
-- https://github.com/ubports/ubuntu-touch/issues/1566
+Implementation Discussions + Examples
+-------------------------------------
 - https://github.com/AsteroidOS/asteroid/issues/165
+- https://github.com/AsteroidOS/meta-bass-hybris/pull/16
+- https://github.com/AsteroidOS/meta-sawfish-hybris/pull/2
+- https://github.com/Geofferey/omni_kernel_oneplus_sm8150/pull/1
+- https://github.com/GrapheneOS-Archive/kernel_google_marlin/pull/1
+- https://github.com/hashbang/os/issues/43
+- https://github.com/HelloVolla/android_kernel_volla_mt6763/pull/10
+- https://github.com/HelloVolla/android_kernel_volla_mt6763/pull/8
 - https://github.com/NixOS/mobile-nixos/issues/383
+- https://github.com/NixOS/mobile-nixos/pull/384
+- https://github.com/the-modem-distro/quectel_eg25_kernel/pull/7
+- https://github.com/ubports/ubuntu-touch/issues/1566
+- https://github.com/voron00/android_kernel_lge_mako/pull/1
 - https://gitlab.com/calyxos/calyxos/-/issues/205
 - https://gitlab.com/LineageOS/issues/devrel/-/issues/235
-- https://github.com/GrapheneOS-Archive/kernel_google_marlin/pull/1
-- https://github.com/HelloVolla/android_kernel_volla_mt6763/pull/8
+- https://gitlab.com/postmarketOS/pmbootstrap/-/issues/1746
 
 Donate
 -------
