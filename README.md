@@ -19,9 +19,9 @@ Real World Use
 --------------
 - This project was considered viable by end of 2017 and has been in use since then for DivestOS.
 - The corresponding CVE database is likely one of the largest with support for older kernels.
-- It is currently used for improving the security of the 100+ devices supported by DivestOS, and is tested booting on 65+ of them.
+- It is currently used for improving the security of the 160+ devices supported by DivestOS, and is tested booting on 65+ of them.
 - It is often near impossible to provide viable mainline support for many vendor altered kernel trees. We believe this project at the very least improves their situation. To ignore this is to be a defeatist. Not everyone can afford the latest shiny thing.
-- Applied examples: [19.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-19.1/CVE_Patchers), [18.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-18.1/CVE_Patchers), [17.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-17.1/CVE_Patchers), [16.0](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-16.0/CVE_Patchers), [15.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-15.1/CVE_Patchers), [14.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-14.1/CVE_Patchers)
+- Production examples: [20.0](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-20.0/CVE_Patchers), [19.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-19.1/CVE_Patchers), [18.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-18.1/CVE_Patchers), [17.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-17.1/CVE_Patchers), [16.0](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-16.0/CVE_Patchers), [15.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-15.1/CVE_Patchers), [14.1](https://github.com/Divested-Mobile/DivestOS-Build/tree/master/Scripts/LineageOS-14.1/CVE_Patchers)
 
 Patch Database
 --------------
@@ -130,24 +130,27 @@ Relevant Links
 - https://github.com/raymanfx/android-cve-checker
 - https://github.com/tdm/vuln-patcher
 
-Implementation Discussions + Examples
--------------------------------------
+Implementation Discussions
+--------------------------
 - https://github.com/AsteroidOS/asteroid/issues/165
+- https://github.com/hashbang/os/issues/43
+- https://github.com/NixOS/mobile-nixos/issues/383
+- https://github.com/ubports/ubuntu-touch/issues/1566
+- https://gitlab.com/calyxos/calyxos/-/issues/205
+- https://gitlab.com/LineageOS/issues/devrel/-/issues/235
+- https://gitlab.com/postmarketOS/pmbootstrap/-/issues/1746
+
+Examples
+--------
 - https://github.com/AsteroidOS/meta-bass-hybris/pull/16
 - https://github.com/AsteroidOS/meta-sawfish-hybris/pull/2
 - https://github.com/Geofferey/omni_kernel_oneplus_sm8150/pull/1
 - https://github.com/GrapheneOS-Archive/kernel_google_marlin/pull/1
-- https://github.com/hashbang/os/issues/43
 - https://github.com/HelloVolla/android_kernel_volla_mt6763/pull/10
 - https://github.com/HelloVolla/android_kernel_volla_mt6763/pull/8
-- https://github.com/NixOS/mobile-nixos/issues/383
 - https://github.com/NixOS/mobile-nixos/pull/384
 - https://github.com/the-modem-distro/quectel_eg25_kernel/pull/7
-- https://github.com/ubports/ubuntu-touch/issues/1566
 - https://github.com/voron00/android_kernel_lge_mako/pull/1
-- https://gitlab.com/calyxos/calyxos/-/issues/205
-- https://gitlab.com/LineageOS/issues/devrel/-/issues/235
-- https://gitlab.com/postmarketOS/pmbootstrap/-/issues/1746
 
 Donate
 -------
