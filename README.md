@@ -47,26 +47,26 @@ Quick Start
 - Put the resulting jar into your .bashrc: $DOS_BINARY_PATCHER
 - Clone the patches repo, put it into your .bashrc: $DOS_PATCHES_LINUX_CVES
 
-Adding Patches
---------------
+Adding Patches [maintenance]
+----------------------------
 - This is a manual process. CVEs are sourced from the sources listed at the top of [Kernel_CVE_Patch_List.txt](https://raw.githubusercontent.com/Divested-Mobile/Kernel_Patches/master/Kernel_CVE_Patch_List.txt)
 
-Importing CIP Patches
----------------------
+Importing CIP Patches [maintenance]
+-----------------------------------
 - Run: ./CIP.sh $PATH_TO_CIP_REPO
 - Run: git diff CIP.txt
 - Manually import the new patches into Kernel_CVE_Patch_List.txt
 
-Importing Linux incremental diffs
-----------------------------------
+Importing Linux incremental diffs [maintenance]
+-----------------------------------------------
 - Open kernel.org in a browser
 - Run: cd 0001-LinuxIncrementals/4.4
 - Run: java -jar $DOS_BINARY_PATCHER linuxIncrDownload 4.x 4.4. 238 > download.sh
 - Run: git diff download.sh
 - Manually run the commands shown in the diff to download the new ones
 
-Importing Linux incremental patches
-------------------------------------
+Importing Linux incremental patches [maintenance]
+-------------------------------------------------
 - Open kernel.org in a browser
 - Run: cd 0001-LinuxIncrementals/4.4
 - Run: java -jar $DOS_BINARY_PATCHER linuxIncrGen 4.4 238 > generate.sh
@@ -74,13 +74,13 @@ Importing Linux incremental patches
 - Run: export incrPath="$PATH_TO/0001-LinuxIncrementals"
 - Run: sh $PATH_TO/generate.sh
 
-Downloading Patches
--------------------
+Downloading Patches [maintenance]
+---------------------------------
 - If updating an existing patchset, rm -rf it first
 - Run: java -jar patcher.jar download $DOS_PATCHES_LINUX_CVES/Kernel_CVE_Patch_List.txt
 
-Downloading Entire Repository
------------------------------
+Downloading Entire Repository [maintenance]
+-------------------------------------------
 - This will take 1-2 hours
 - You will likely be rate-limited
 - Some patches will be missing as the links may no longer be valid
