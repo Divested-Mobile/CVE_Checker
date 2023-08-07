@@ -182,7 +182,7 @@ public class Downloader {
       return url.replaceAll("cgit/", "pub/scm/").replaceAll("commit", "patch");
     } else if (url.contains("codeaurora.org")) {
       return url.replaceAll("commit", "patch");
-    } else if (url.contains("android.googlesource.com")) {
+    } else if (url.contains("android.googlesource.com") || url.contains("chromium.googlesource.com")) {
       String add = "";
       if (!url.contains("%5E%21")) {
         add += "%5E%21/";
@@ -215,6 +215,7 @@ public class Downloader {
 
   private static boolean isBase64Encoded(Link link) {
     if (link.getURL().contains("android.googlesource.com")
+        || link.getURL().contains("chromium.googlesource.com")
         || link.getURL().contains("review.lineageos.org")
         || link.getURL().contains("android-review.googlesource.com")) {
       return true;
