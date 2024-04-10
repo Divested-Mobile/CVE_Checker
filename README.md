@@ -151,6 +151,7 @@ Examples
 - https://github.com/NixOS/mobile-nixos/pull/384
 - https://github.com/the-modem-distro/quectel_eg25_kernel/pull/7
 - https://github.com/voron00/android_kernel_lge_mako/pull/1
+- https://github.com/Bettehem/android_kernel_oneplus_msm8996/pull/1
 
 Donate
 -------

@@ -58,15 +58,19 @@ public class Sorter {
       }
       System.out.println(cve.getId());
       for (String line : cve.getLines()) {
-        if(Common.INCLUSIVE_KERNEL_PATH != null && line.contains("Link - ^")
+        if(Common.INCLUSIVE_KERNEL_PATH != null && (line.contains("Link - ^") || line.contains("Link - https"))
                 && (line.contains(Common.URL_LINUX_MAINLINE) || line.contains(Common.URL_LINUX_STABLE) || line.contains(Common.URL_AOSP_STABLE))) {
           String[] lineSplit = line.split(" - ");
           String commitID = null;
-          if(lineSplit[2].contains("=")) {
-            commitID = lineSplit[2].split("=")[1];
+          int offset = 1;
+          if (line.contains("Link - ^")) {
+            offset = 2;
           }
-          if(lineSplit[2].contains("/+/")) {
-            commitID = lineSplit[2].split("/\\+/")[1];
+          if(lineSplit[offset].contains("=")) {
+            commitID = lineSplit[offset].split("=")[1];
+          }
+          if(lineSplit[offset].contains("/+/")) {
+            commitID = lineSplit[offset].split("/\\+/")[1];
           }
           if(commitID == null) {
             System.out.println("Unable to extract commit ID");
@@ -74,7 +78,12 @@ public class Sorter {
           }
           Version kernelVersion = Common.getPatchVersion(commitID);
           if(kernelVersion != null) {
-            line = "\tLink - ^" + kernelVersion.getVersionFull() + " - " + lineSplit[2].trim();
+            if(line.startsWith("#")) {
+              line = "#";
+            } else {
+              line = "";
+            }
+            line += "\tLink - ^" + kernelVersion.getVersionFull() + " - " + lineSplit[offset].trim();
           }
         }
         System.out.println(line);
