@@ -58,7 +58,7 @@ public class Sorter {
       }
       System.out.println(cve.getId());
       for (String line : cve.getLines()) {
-        if(Common.INCLUSIVE_KERNEL_PATH != null && (line.contains("Link - ^") || line.contains("Link - https"))
+        if(Common.INCLUSIVE_KERNEL_PATH != null && (line.contains("Link - ^") || (line.contains("Link - https") && !manifest.toString().contains("CIP.")))
                 && (line.contains(Common.URL_LINUX_MAINLINE) || line.contains(Common.URL_LINUX_STABLE) || line.contains(Common.URL_AOSP_STABLE))) {
           String[] lineSplit = line.split(" - ");
           String commitID = null;
