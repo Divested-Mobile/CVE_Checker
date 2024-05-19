@@ -81,16 +81,17 @@ public class Common {
             System.exit(1);
         }
         try {
-            Process gitShow = Runtime.getRuntime().exec("git -C " + INCLUSIVE_KERNEL_PATH + " show " + commitID + ":Makefile");
-            if(!gitShow.waitFor(100, TimeUnit.MILLISECONDS)) {
-                gitShow.destroy();
+            ProcessBuilder gitShow = new ProcessBuilder("git", "-C", INCLUSIVE_KERNEL_PATH, "show", commitID + ":Makefile");
+            Process gitShowExec = gitShow.start();
+/*            if(!gitShowExec.waitFor(100, TimeUnit.MILLISECONDS)) {
+                gitShowExec.destroy();
                 return null;
-            }
+            }*/
 /*            if (gitShow.exitValue() != 0) {
                 System.out.println("Failed to get patch version " + commitID);
                 System.exit(1);
             }*/
-            Scanner output = new Scanner(gitShow.getInputStream());
+            Scanner output = new Scanner(gitShowExec.getInputStream());
             return getKernelVersion(output, true);
         } catch (Exception e) {
             e.printStackTrace();
