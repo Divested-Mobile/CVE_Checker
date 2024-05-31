@@ -203,7 +203,10 @@ public class Patcher {
               if (repoVersion.getVersionFull().startsWith("4.4") && patchVersion.equals("4.9")) {
                 versions.add(patchVersion);
               }
-              if (repoVersion.getVersionFull().startsWith("4.9") && patchVersion.equals("4.14")) {
+              if (repoVersion.getVersionFull().startsWith("4.9") && (patchVersion.equals("4.14") || (looseVersionsExtreme && (patchVersion.equals("4.19"))))) {
+                versions.add(patchVersion);
+              }
+              if (repoVersion.getVersionFull().startsWith("4.14") && patchVersion.equals("4.19")) {
                 versions.add(patchVersion);
               }
               //Try to apply 3.4 patches to 3.10 regardless of 3.18 patches being available
