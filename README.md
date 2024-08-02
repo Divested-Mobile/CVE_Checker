@@ -33,8 +33,7 @@ Prebuilts
 
 License
 -------
-- GPL-3.0-or-later
-- Or at your discretion: GPL-2.0 (as per the kernel itself)
+- AGPL-3.0-or-later
 
 Credits
 -------
