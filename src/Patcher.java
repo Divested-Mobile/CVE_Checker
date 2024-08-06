@@ -336,7 +336,7 @@ public class Patcher {
       command += " --exclude=Makefile";
     }
     try {
-      if (Common.runCommand(command + " --reverse") != 0 && Common.runCommand(command) == 0) {
+      if ((Common.runCommand(command + " --reverse") != 0 || patch.contains("CVE-2024-41020")) && Common.runCommand(command) == 0) {
         command = command.replaceAll(" --check", "");
         System.out.println(
             "\t\tPatch can apply successfully: " + logPretty(command, repoPath, patchesPath));
