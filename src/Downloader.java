@@ -115,7 +115,7 @@ public class Downloader {
               String patchOutput =
                   outDir.getAbsolutePath() + "/" + String.format("%04d", linkC) + ".patch" + base64;
               boolean needDownload = true;
-              if(Common.INCLUSIVE_KERNEL_PATH != null && (link.getURL().startsWith(Common.URL_LINUX_MAINLINE) || link.getURL().startsWith(Common.URL_LINUX_STABLE) || link.getURL().startsWith(Common.URL_LINUX_CIP) || link.getURL().startsWith(Common.URL_AOSP_STABLE))) {
+              if(Common.INCLUSIVE_KERNEL_PATH != null && (link.getURL().startsWith(Common.URL_LINUX_MAINLINE) || link.getURL().startsWith(Common.URL_LINUX_STABLE) || link.getURL().startsWith(Common.URL_LINUX_CIP) || link.getURL().startsWith(Common.URL_AOSP_STABLE) || link.getURL().startsWith(Common.URL_OPENELA))) {
                 String commitID = null;
                 if(link.getURL().contains("=")) {
                   commitID = link.getURL().split("=")[1];
@@ -170,7 +170,8 @@ public class Downloader {
             .replaceAll("LINUX_KERNEL_MAINLINE=", Common.URL_LINUX_MAINLINE)
             .replaceAll("LINUX_KERNEL_STABLE=", Common.URL_LINUX_STABLE)
             .replaceAll("LINUX_KERNEL_CIP=", Common.URL_LINUX_CIP)
-            .replaceAll("AOSP_KERNEL_STABLE=", Common.URL_AOSP_STABLE);
+            .replaceAll("AOSP_KERNEL_STABLE=", Common.URL_AOSP_STABLE)
+            .replaceAll("OPENELA=", Common.URL_OPENELA);
     if (url.contains("lkml.org/lkml/diff")
         || (url.contains("raw.githubusercontent") && url.endsWith(".patch"))
         || (url.contains("marc.info") && url.endsWith("q=raw"))

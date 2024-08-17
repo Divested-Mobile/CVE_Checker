@@ -28,6 +28,8 @@ public class Common {
             "https://git.kernel.org/pub/scm/linux/kernel/git/cip/linux-cip.git/commit/?id=";
     public static final String URL_AOSP_STABLE =
             "https://android.googlesource.com/kernel/common/+/";
+    public static final String URL_OPENELA =
+            "https://github.com/openela/kernel-lts/commit/";
     public static String INCLUSIVE_KERNEL_PATH = null;
 
     public static void initEnv() {

@@ -206,6 +206,17 @@ public class Scraper {
                   System.out.println("\tLink - " + version + " - " + Common.URL_AOSP_STABLE + commit);
                 }
               }
+              if (line.contains("openela/")) {
+                final String version = line.split("openela/")[1].split(":")[0];
+                final String commit = line.split("\\[")[1].split("\\]")[0];
+                if (commit.contains(", ")) {
+                  for (String commitS : commit.split(", ")) {
+                    System.out.println("\tLink - " + version + " - " + Common.URL_OPENELA + commitS);
+                  }
+                } else {
+                  System.out.println("\tLink - " + version + " - " + Common.URL_OPENELA + commit);
+                }
+              }
             }
           }
           cve.close();
