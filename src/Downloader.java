@@ -123,6 +123,9 @@ public class Downloader {
                 if(link.getURL().contains("/+/")) {
                   commitID = link.getURL().split("/\\+/")[1];
                 }
+                if(link.getURL().contains("openela/kernel-lts")) {
+                  commitID = link.getURL().split("https://github.com/openela/kernel-lts/commit/")[1];
+                }
                 if(commitID == null) {
                   System.out.println("Unable to extract commit ID");
                   System.exit(1);
