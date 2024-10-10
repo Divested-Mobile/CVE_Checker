@@ -114,8 +114,6 @@ public class Patcher {
     return repoPath.exists();
   }
 
-  private static int wifiVersionSupported = -1;
-
   private static void checkAndGenerateScript(File repoPath, String repoName, File patchesPath,
       File outputDir, ArrayList<String> scriptCommands) {
     if (doesRepoExist(repoPath)) {
@@ -132,18 +130,6 @@ public class Patcher {
       Version repoVersion = Common.getKernelVersion(repoPath);
       String patchesPathScript = patchesPathScriptLinux;
       boolean ignoreMajor = false;
-      if (new File(repoPath + "/drivers/staging/prima/").exists()) {
-        wifiVersionSupported = 1;
-      }
-      if (new File(repoPath + "/drivers/staging/qcacld-2.0/").exists()) {
-        wifiVersionSupported = 2;
-      }
-      if (new File(repoPath + "/drivers/staging/qcacld-3.0/").exists()) {
-        wifiVersionSupported = 3;
-      }
-      if (new File(repoPath + "/drivers/staging/qca-wifi-host-cmn/").exists()) {
-        wifiVersionSupported = 4;
-      }
 
       // The top-level directory contains all patchsets
       List<File> patchSets = Arrays.asList(patchesPath.listFiles(File::isDirectory));
@@ -176,10 +162,7 @@ public class Patcher {
             if (isVersionInRange(repoVersion, patchVersion, ignoreMajor)) {
               versions.add(patchVersion);
             }
-            if ((wifiVersionSupported == 1 && patchVersion.equals("prima"))
-                || (wifiVersionSupported == 2 && patchVersion.equals("qcacld-2.0"))
-                || (wifiVersionSupported == 3 && patchVersion.equals("qcacld-3.0"))
-                || (wifiVersionSupported == 4 && patchVersion.equals("qca-wifi-host-cmn"))) {
+            if(!getModulePath("/" + patchVersion + "/").equals("INVALID") && new File(repoPath + "/" + getModulePath("/" + patchVersion + "/")).exists()) {
               versions.add(patchVersion);
             }
             if(!directMatchAvailable && looseVersions) {
@@ -282,7 +265,6 @@ public class Patcher {
     } else {
       System.out.println("Invalid repo: " + repoName);
     }
-    wifiVersionSupported = -1;
   }
 
   private static void writeScript(String repoName, File outputDir,
@@ -358,9 +340,9 @@ public class Patcher {
       } else {
         System.out.println(
             "\t\tPatch does not apply successfully: " + logPretty(command, repoPath, patchesPath));
-        if (isWifiPatch(patch) && alternateRoot.equals("")) {
-          System.out.println("\t\t\tThis is a Wi-Fi patch, attempting to apply directly!");
-          String altRoot = "drivers/staging/" + getWifiVersionString();
+        if (!getModulePath(patch).equals("INVALID") && alternateRoot.equals("")) {
+          System.out.println("\t\t\tThis is a module patch, attempting to apply directly!");
+          String altRoot = getModulePath(patch);
           return doesPatchApply(repoPath, patchesPath, patch, applyPatch, altRoot,
               patchesPathScript);
         }
@@ -424,22 +406,37 @@ public class Patcher {
     return false;
   }
 
-  private static boolean isWifiPatch(String patch) {
-    return patch.contains("/prima/") || patch.contains("/qcacld-") || patch.contains("/qca-wifi-");
-  }
-
-  private static String getWifiVersionString() {
-    switch (wifiVersionSupported) {
-      case 1:
-        return "prima";
-      case 2:
-        return "qcacld-2.0";
-      case 3:
-        return "qcacld-3.0";
-      case 4:
-        return "qca-wifi-host-cmn";
-      default:
-        return "UNDEFINED";
+  private static String getModulePath(String patch) {
+    if (patch.contains("/audio-kernel/")) {
+      return "techpack/audio";
+    } else if (patch.contains("/camera-kernel/")) {
+      return "techpack/camera";
+    } else if (patch.contains("/dsp-kernel/")) {
+      return "INVALID"; //TODO
+    } else if (patch.contains("/eva-kernel/")) {
+      return "drivers/media/platform";
+    } else if (patch.contains("/fm-commonsys/")) {
+      return "INVALID"; //TODO
+    } else if (patch.contains("/graphics-kernel/")) {
+      return "drivers/gpu/msm";
+    } else if (patch.contains("/prima/")) {
+      return "drivers/staging/prima";
+    } else if (patch.contains("/qcacld-2.0/")) {
+      return "drivers/staging/qcacld-2.0";
+    } else if (patch.contains("/qcacld-3.0/")) {
+      return "drivers/staging/qcacld-3.0";
+    } else if (patch.contains("/qca-cmn/")) {
+      return "drivers/staging/qca-wifi-host-cmn";
+    } else if (patch.contains("/qcawifi-cmn-dev/")) {
+      return "INVALID"; //TODO
+    } else if (patch.contains("/qca-wifi-host-cmn/")) {
+      return "drivers/staging/qca-wifi-host-cmn";
+    } else if (patch.contains("/securemsm-kernel/")) {
+      return "INVALID"; //TODO
+    } else if (patch.contains("/video-driver/")) {
+      return "techpack/video";
+    } else {
+      return "INVALID";
     }
   }
 
